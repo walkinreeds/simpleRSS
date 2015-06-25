@@ -31,7 +31,7 @@ class screen(object):
         self.stdscr.addstr(0,0, title+(" "*(curses.COLS - len(title))), curses.color_pair(1));
         #footer
         bottom = "{0} x {1}".format(curses.COLS,curses.LINES)
-        self.stdscr.addstr(curses.LINES-2,0, bottom+(" "*(curses.COLS - len(bottom))), curses.color_pair(1));
+        self.stdscr.addstr(curses.LINES-3,0, bottom+(" "*(curses.COLS - len(bottom))), curses.color_pair(1));
         self.stdscr.refresh()
         return
 
@@ -45,12 +45,12 @@ class screen(object):
             pad.addstr(i, 0, " {0}{1}".format(items[i], " "*(curses.COLS - len(items[i]))))
 
         #fill blank lines to overwrite old content
-        if(nrItems < curses.LINES - 3):
+        if(nrItems < curses.LINES - 4):
             for z in range(nrItems + 1, curses.LINES-3):
                 self.stdscr.addstr(z, 0, " "*curses.COLS);
 
         pad.chgat(selectedItem,0,-1,curses.A_REVERSE);
-        pad.refresh(padY,0,1,0,curses.LINES-3,curses.COLS)
+        pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
         self.stdscr.refresh()
 
         while (1):
@@ -61,8 +61,8 @@ class screen(object):
                     selectedItem+=1;
                     pad.chgat(selectedItem,0,-1,curses.A_REVERSE);
                     #scroll down when we reach the end
-                    if (selectedItem >= curses.LINES - 3):
-                        padY = selectedItem - (curses.LINES - 3) + 1
+                    if (selectedItem >= curses.LINES - 4):
+                        padY = selectedItem - (curses.LINES - 4) + 1
             if c == ord('k') or c == curses.KEY_UP:
                 if (selectedItem > 0):
                     pad.chgat(selectedItem,0,-1,curses.A_NORMAL);
@@ -72,10 +72,17 @@ class screen(object):
                     if (selectedItem < padY):
                         padY -= 1
             if c == ord('q') or c == curses.KEY_LEFT or c == ord('h'):
-                return -1, -1;
+                return ('q',);
             if c == 10 or c == curses.KEY_RIGHT or c == ord('l'): #enter
-                return selectedItem, padY;
+                return padY, selectedItem;
             if c == ord('r'):#update this feed
-                return selectedItem, -2;
+                return 'r',selectedItem;
+            if c == ord('R'):
+                return ('R',)
 
-            pad.refresh(padY,0,1,0,curses.LINES-3,curses.COLS)
+            pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
+
+    def setStatus(self, message):
+        self.stdscr.addstr(curses.LINES-2,0, str(message));
+        self.stdscr.refresh()
+        return 

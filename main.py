@@ -9,36 +9,60 @@ class mainprogram(object):
         configpath = self.getConfigPath()
         self.database = database(os.path.join(configpath,'database.db3'))
         self.screen = screen()
-        rssworker = rss()
+        self.rssworker = rss()
 
-        urllist, namelist = self.getFeedList(os.path.join(configpath,'urls')) #get urls
-         
         self.screen.showInterface(0);
         #mainloop
         while(1):
+            urllist, namelist = self.getFeedList(os.path.join(configpath,'urls')) #get urls
             feedListReturn = self.screen.showList(namelist)
-
-            if feedListReturn[1] == -1:
+            if feedListReturn[0] == 'q': #pressed q / exit app
                 self.screen.close()
                 break;
-            elif feedListReturn[1] == -2: #update selected feed
-                feed = rssworker.getFeed(urllist[feedListReturn[0]])
-                self.database.addFeed(urllist[feedListReturn[0]], feed[0]) #add or update feed name
-                #insert feeds into the database
-                for article in feed[1]:
-                    print(article.links[0]['href'])
-                    #database.addArticle(urllist[feedListReturn[0]],article.href,article.title,article.content,article.published)
-            else: #feedlist
-                feed = self.database.getArticles(urllist[feedListReturn[0]])
-                articleList = [];
-                #for article in feed[1]:
-                #    articleList.append("{0}    {1}".format(article.published,article.title))
+            elif feedListReturn[0] == 'r': #pressed r / update selected feed
+                self.updateFeed(urllist[feedListReturn[1]])
+            elif feedListReturn[0] == 'R': #pressed R / update all feeds
+                for feed in urllist:
+                    self.screen.setStatus('Updating: {0}'.format(feed))
+                    self.updateFeed(feed)
 
-                #articlesloop
+            else: #feedlist
                 while(1):
+                    articleList = self.getArticleList(urllist[feedListReturn[1]])
                     articleListReturn = self.screen.showList(articleList)
-                    if (articleListReturn[0] == -1):
+                    if (articleListReturn[0] == 'q'):
                         break;
+                    elif (articleListReturn[0] == 'r'): #pressed r / update this feed
+                        self.updateFeed(urllist[feedListReturn[1]])
+        return
+
+
+    def getArticleList(self, feedurl):
+        feed = self.database.getArticles(feedurl)
+        articleList = [];
+        for article in feed:
+            datetimetuple = article[5].split(",")
+            pubdate = "{0}/{1}/{2}".format(datetimetuple[0].zfill(2),datetimetuple[1].zfill(2),datetimetuple[2].zfill(2))
+            articleList.append("{0}    {1}".format(pubdate,article[3]))
+        return articleList
+
+
+    def updateFeed(self, feedurl):
+        feedName, articles, version = self.rssworker.getFeed(feedurl)
+        if (feedName == -1 and articles == -1):
+            return #invalid feed
+        self.database.addFeed(feedurl, feedName) #add or update feed name
+        #insert feeds into the database
+        try:
+            for article in articles:
+                pubDate = "{0},{1},{2},{3},{4}".format(article[3][0],article[3][1],article[3][2],article[3][3],article[3][4])
+                self.database.addArticle(feedurl,article[0],article[1],article[2],pubDate)
+        except Exception as e:
+            self.screen.close()
+            print(feedName)
+            print(article)
+            print(e)
+            raise("")
         return
 
 
