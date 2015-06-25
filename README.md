@@ -1,0 +1,2 @@
+# simpleRSS
+Curses RSS Reader
