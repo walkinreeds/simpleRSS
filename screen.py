@@ -45,8 +45,8 @@ class screen(object):
             pad.addstr(i, 0, " {0}{1}".format(items[i], " "*(curses.COLS - len(items[i]))))
 
         #fill blank lines to overwrite old content
-        if(nrItems < curses.LINES - 4):
-            for z in range(nrItems + 1, curses.LINES-4):
+        if(nrItems < curses.LINES - 3):
+            for z in range(nrItems + 1, curses.LINES-3):
                 self.stdscr.addstr(z, 0, " "*curses.COLS);
 
         pad.chgat(selectedItem,0,-1,curses.A_REVERSE);
@@ -91,8 +91,8 @@ class screen(object):
         for i in range(0,len(content)):
             pad.addstr(i,0,content[i])
         #fill blank lines to overwrite old content
-        if(len(content) < curses.LINES - 4):
-            for z in range(len(content) + 1, curses.LINES-4):
+        if(len(content) < curses.LINES - 3):
+            for z in range(len(content) + 1, curses.LINES-3):
                 self.stdscr.addstr(z, 0, " "*curses.COLS);
 
 
