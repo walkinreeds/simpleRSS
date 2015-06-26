@@ -50,13 +50,14 @@ class database(object):
             c.execute("INSERT INTO articles(feed,url,title,content,pubdatetime,viewed) VALUES (?,?,?,?,?,?)", (md5feedUrl,url,title,content,pubdatetime,0))
             self.conn.commit()
         except sqlite3.IntegrityError as e:
+            print(e)
             pass
         return
 
     def getArticles(self, feedurl):
         c = self.conn.cursor()
         md5feedUrl=hashlib.md5(feedurl.encode('utf-8')).hexdigest()
-        c.execute("SELECT * FROM articles WHERE feed = ? ORDER BY articleid ASC",(md5feedUrl,))
+        c.execute("SELECT * FROM articles WHERE feed = ? ORDER BY pubdatetime DESC",(md5feedUrl,))
         return c.fetchall()
 #
 #databaseTest = database('/home/bruno/.cursesrss/database.db3')
