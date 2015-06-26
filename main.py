@@ -28,23 +28,34 @@ class mainprogram(object):
 
             else: #feedlist
                 while(1):
-                    articleList = self.getArticleList(urllist[feedListReturn[1]])
+                    articleList,articleContent = self.getArticleList(urllist[feedListReturn[1]])
                     articleListReturn = self.screen.showList(articleList)
                     if (articleListReturn[0] == 'q'):
                         break;
-                    elif (articleListReturn[0] == 'r'): #pressed r / update this feed
+                    elif (articleListReturn[0] == 'r' or articleListReturn[0] == 'R'): #pressed r / update this feed
                         self.updateFeed(urllist[feedListReturn[1]])
+                    else:
+                        self.screen.showArticle(articleContent[articleListReturn[1]])
+
         return
 
 
     def getArticleList(self, feedurl):
         feed = self.database.getArticles(feedurl)
         articleList = [];
+        articleContent = []
         for article in feed:
             datetimetuple = article[5].split(",")
             pubdate = "{0}/{1}/{2}".format(datetimetuple[0].zfill(2),datetimetuple[1].zfill(2),datetimetuple[2].zfill(2))
             articleList.append("{0}    {1}".format(pubdate,article[3]))
-        return articleList
+
+            thisHeader = []
+            thisHeader.append("Title: {0}\n".format(article[3]))
+            thisHeader.append("Date:  {0}\n".format(pubdate))
+            thisHeader.append("Link:  {0}\n".format(article[2]))
+            articleContent.append(''.join(thisHeader)+article[4])
+
+        return articleList, articleContent
 
 
     def updateFeed(self, feedurl):
