@@ -35,7 +35,9 @@ class rss(object):
         return d.feed.title, articles, d.version
 
     def htmlToText(self,content):
-        return html2text.html2text(content)                    
+        parser = html2text.HTML2Text()                    
+        parser.body_width = 0;
+        return parser.handle(content)
 
 if __name__ == '__main__':
     import sys
