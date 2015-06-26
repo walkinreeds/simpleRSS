@@ -6,7 +6,8 @@ class screen(object):
             #initialize curses
             self.stdscr = curses.initscr()
             curses.start_color()
-            curses.init_pair(1, 136, 235)
+            if curses.has_colors():
+                curses.init_pair(1,0,7)
             curses.noecho()
             curses.cbreak()
             curses.curs_set(0)
@@ -25,13 +26,13 @@ class screen(object):
         curses.nocbreak()
         curses.endwin()
 
-    def showInterface(self, unreadCount):
-        #header
-        title = "cursesRSS 0.1 - {0} unread".format(unreadCount);
-        self.stdscr.addstr(0,0, title+(" "*(curses.COLS - len(title))), curses.color_pair(1));
-        #footer
-        bottom = "{0} x {1}".format(curses.COLS,curses.LINES)
-        self.stdscr.addstr(curses.LINES-3,0, bottom+(" "*(curses.COLS - len(bottom))), curses.color_pair(1));
+    def showInterface(self, top_msg = "simpleRSS", bottom_msg = ""):
+        if curses.has_colors():
+            self.stdscr.addstr(0,0, top_msg+(" "*(curses.COLS - len(top_msg))), curses.color_pair(1));
+            self.stdscr.addstr(curses.LINES-3,0, bottom_msg+(" "*(curses.COLS - len(bottom_msg))), curses.color_pair(1));
+        else:
+            self.stdscr.addstr(0,0, top_msg+(" "*(curses.COLS - len(top_msg))) );
+            self.stdscr.addstr(curses.LINES-3,0, bottom_msg+(" "*(curses.COLS - len(bottom_msg))) );
         self.stdscr.refresh()
         return
 
@@ -83,7 +84,7 @@ class screen(object):
 
     def showArticle(self, content):
         #split content in lines
-        content = self.fitContent(content, curses.COLS)
+        content = content.split('\n')
         pad = curses.newpad(len(content)+1,curses.COLS)
         pad.keypad(1)
         padY = 0;
@@ -111,21 +112,11 @@ class screen(object):
                 pass
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
 
-    def fitContent(self,content,cols):
-        content = ''.join(content) #convert to string
-        resultContent = []
-        line = ""
-        for i in range(0,len(content)):
-           line = line + content[i]
-           if len(line) == cols or content[i] == "\n":
-               resultContent.append(line)
-               line = "";
-
-        if len(line)>0:
-            resultContent.append(line)
-        return resultContent
+    def getDimensions(self):
+        return curses.LINES, curses.COLS
 
     def setStatus(self, message):
+        self.stdscr.addstr(curses.LINES-2,0, ' '*curses.COLS)
         self.stdscr.addstr(curses.LINES-2,0, str(message));
         self.stdscr.refresh()
         return
