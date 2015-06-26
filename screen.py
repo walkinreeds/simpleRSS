@@ -75,7 +75,7 @@ class screen(object):
             elif c == 10 or c == curses.KEY_RIGHT or c == ord('l'): #enter
                 return padY, selectedItem;
             elif c == ord('r'):#update this feed
-                return 'r',selectedItem;
+                return 'r',padY,selectedItem;
             elif c == ord('R'):
                 return ('R',)
 
