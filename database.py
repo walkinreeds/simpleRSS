@@ -56,7 +56,7 @@ class database(object):
     def getArticles(self, feedurl):
         c = self.conn.cursor()
         md5feedUrl=hashlib.md5(feedurl.encode('utf-8')).hexdigest()
-        c.execute("SELECT * FROM articles WHERE feed = ?",(md5feedUrl,))
+        c.execute("SELECT * FROM articles WHERE feed = ? ORDER BY articleid ASC",(md5feedUrl,))
         return c.fetchall()
 #
 #databaseTest = database('/home/bruno/.cursesrss/database.db3')
