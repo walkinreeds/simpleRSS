@@ -35,12 +35,11 @@ class screen(object):
         self.stdscr.refresh()
         return
 
-    def showList(self, items, padY = 0):
+    def showList(self, items, padY = 0, selectedItem = 0):
         nrItems = len(items);
         #feed list
         pad = curses.newpad(nrItems+1,curses.COLS)
         pad.keypad(1)
-        selectedItem = 0;
         for i in range(0,nrItems):
             pad.addstr(i, 0, " {0}{1}".format(items[i], " "*(curses.COLS - len(items[i]))))
 
@@ -101,7 +100,8 @@ class screen(object):
         while(1):
             c = pad.getch()
             if c == ord('j') or c == curses.KEY_DOWN:
-                padY += 1;
+                if padY < len(content) and len(content) > curses.LINES - 4:
+                    padY += 1;
             elif c == ord('k') or c == curses.KEY_UP:
                 if (padY > 0):
                     padY -= 1
@@ -114,9 +114,9 @@ class screen(object):
     def fitContent(self,content,cols):
         content = ''.join(content) #convert to string
         resultContent = []
-        line = "" 
+        line = ""
         for i in range(0,len(content)):
-           line = line + content[i] 
+           line = line + content[i]
            if len(line) == cols or content[i] == "\n":
                resultContent.append(line)
                line = "";
