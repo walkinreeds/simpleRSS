@@ -46,7 +46,7 @@ class screen(object):
 
         #fill blank lines to overwrite old content
         if(nrItems < curses.LINES - 4):
-            for z in range(nrItems + 1, curses.LINES-3):
+            for z in range(nrItems + 1, curses.LINES-4):
                 self.stdscr.addstr(z, 0, " "*curses.COLS);
 
         pad.chgat(selectedItem,0,-1,curses.A_REVERSE);
@@ -63,7 +63,7 @@ class screen(object):
                     #scroll down when we reach the end
                     if (selectedItem >= curses.LINES - 4):
                         padY = selectedItem - (curses.LINES - 4) + 1
-            if c == ord('k') or c == curses.KEY_UP:
+            elif c == ord('k') or c == curses.KEY_UP:
                 if (selectedItem > 0):
                     pad.chgat(selectedItem,0,-1,curses.A_NORMAL);
                     selectedItem-=1;
@@ -71,18 +71,61 @@ class screen(object):
                     #scroll up when we want a item that isnt showing
                     if (selectedItem < padY):
                         padY -= 1
-            if c == ord('q') or c == curses.KEY_LEFT or c == ord('h'):
+            elif c == ord('q') or c == curses.KEY_LEFT or c == ord('h'):
                 return ('q',);
-            if c == 10 or c == curses.KEY_RIGHT or c == ord('l'): #enter
+            elif c == 10 or c == curses.KEY_RIGHT or c == ord('l'): #enter
                 return padY, selectedItem;
-            if c == ord('r'):#update this feed
+            elif c == ord('r'):#update this feed
                 return 'r',selectedItem;
-            if c == ord('R'):
+            elif c == ord('R'):
                 return ('R',)
 
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
 
+    def showArticle(self, content):
+        #split content in lines
+        content = self.fitContent(content, curses.COLS)
+        pad = curses.newpad(len(content)+1,curses.COLS)
+        pad.keypad(1)
+        padY = 0;
+        for i in range(0,len(content)):
+            pad.addstr(i,0,content[i])
+        #fill blank lines to overwrite old content
+        if(len(content) < curses.LINES - 4):
+            for z in range(len(content) + 1, curses.LINES-4):
+                self.stdscr.addstr(z, 0, " "*curses.COLS);
+
+
+        pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
+        self.stdscr.refresh()
+        while(1):
+            c = pad.getch()
+            if c == ord('j') or c == curses.KEY_DOWN:
+                padY += 1;
+            elif c == ord('k') or c == curses.KEY_UP:
+                if (padY > 0):
+                    padY -= 1
+            elif c == ord('q') or c == curses.KEY_LEFT or c == ord('h'):
+                return ('q',)
+            elif c == 10 or c == curses.KEY_RIGHT or c == ord('l'): #enter
+                pass
+            pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
+
+    def fitContent(self,content,cols):
+        content = ''.join(content) #convert to string
+        resultContent = []
+        line = "" 
+        for i in range(0,len(content)):
+           line = line + content[i] 
+           if len(line) == cols or content[i] == "\n":
+               resultContent.append(line)
+               line = "";
+
+        if len(line)>0:
+            resultContent.append(line)
+        return resultContent
+
     def setStatus(self, message):
         self.stdscr.addstr(curses.LINES-2,0, str(message));
         self.stdscr.refresh()
-        return 
+        return
