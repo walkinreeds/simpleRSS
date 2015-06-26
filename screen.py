@@ -73,11 +73,11 @@ class screen(object):
             elif c == ord('q') or c == curses.KEY_LEFT or c == ord('h'):
                 return ('q',);
             elif c == 10 or c == curses.KEY_RIGHT or c == ord('l'): #enter
-                return padY, selectedItem;
+                return 'return',padY, selectedItem;
             elif c == ord('r'):#update this feed
                 return 'r',padY,selectedItem;
             elif c == ord('R'):
-                return ('R',)
+                return 'R',padY,selectedItem
 
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
 
