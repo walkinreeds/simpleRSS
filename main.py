@@ -11,11 +11,11 @@ class mainprogram(object):
         self.screen = screen()
         self.rssworker = rss()
 
-        self.screen.showInterface(0);
         #mainloop
         feedPadY = 0
         selectedFeed = 0;
         while(1):
+            self.screen.showInterface(" simpleRSS v0.1 Alpha - {0} unread".format(0), " q:Quit,ENTER:Open,r:Reload,R:Reload All,a:Mark Feed Read,A:Mark All Read");
             urllist, namelist = self.getFeedList(os.path.join(configpath,'urls')) #get urls
             feedListReturn = self.screen.showList(namelist, feedPadY, selectedFeed)
             if feedListReturn[0] == 'q': #pressed q / exit app
@@ -49,7 +49,7 @@ class mainprogram(object):
                     elif (articleListReturn[0] == 'return'):
                         selectedArticle = articleListReturn[2]
                         articlePadY = articleListReturn[1]
-                        self.screen.showArticle(self.rssworker.htmlToText(articleContent[articleListReturn[1]]))
+                        self.screen.showArticle(self.rssworker.htmlToText(articleContent[selectedArticle],self.screen.getDimensions()[1]))
 
         return
 
@@ -94,9 +94,6 @@ class mainprogram(object):
                 self.database.addArticle(feedurl,article[0],article[1],article[2],pubDate)
         except Exception as e:
             self.screen.close()
-            print(feedName)
-            print(article)
-            print(e)
         return
 
 
