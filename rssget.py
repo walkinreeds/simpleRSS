@@ -50,4 +50,4 @@ if __name__ == '__main__':
     pubDate = content[0][3]
     print("Date: {0}-{1}-{2} {3}:{4}".format(pubDate[0],pubDate[1],pubDate[2],pubDate[3],pubDate[4]))
     print("Content:")
-    print(content[0][2])
+    print(prog.htmlToText(content[0][2]))
