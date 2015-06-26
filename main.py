@@ -46,19 +46,23 @@ class mainprogram(object):
         articleContent = []
         for article in feed:
             datetimetuple = article[5].split(",")
-            pubdate = "{0}/{1}/{2}".format(datetimetuple[0].zfill(2),datetimetuple[1].zfill(2),datetimetuple[2].zfill(2))
+            pubdate = "{0}/{1}/{2}".format(datetimetuple[0],datetimetuple[1],datetimetuple[2])
             articleList.append("{0}    {1}".format(pubdate,article[3]))
 
             thisHeader = []
             thisHeader.append("Title: {0}<br>".format(article[3]))
-            thisHeader.append("Date:  {0}<br>".format(pubdate))
+            thisHeader.append("Date:  {0} {1}:{2}<br>".format(pubdate,datetimetuple[3],datetimetuple[4]))
             thisHeader.append("Link:  {0}<br>".format(article[2]))
+            thisHeader.append("<hr>")
             articleContent.append(''.join(thisHeader)+article[4])
 
         return articleList, articleContent
 
 
     def updateFeed(self, feedurl):
+        """
+        Add articles to database
+        """
         feedName, articles, version = self.rssworker.getFeed(feedurl)
         if (feedName == -1 and articles == -1):
             return #invalid feed
@@ -66,14 +70,19 @@ class mainprogram(object):
         #insert feeds into the database
         try:
             for article in articles:
-                pubDate = "{0},{1},{2},{3},{4}".format(article[3][0],article[3][1],article[3][2],article[3][3],article[3][4])
+                year   = str(article[3][0])
+                month  = str(article[3][1]).zfill(2);
+                day    = str(article[3][2]).zfill(2)
+                hour   = str(article[3][3]).zfill(2);
+                minute = str(article[3][4]).zfill(2);
+
+                pubDate = "{0},{1},{2},{3},{4}".format(year,month,day,hour,minute)
                 self.database.addArticle(feedurl,article[0],article[1],article[2],pubDate)
         except Exception as e:
             self.screen.close()
             print(feedName)
             print(article)
             print(e)
-            raise("")
         return
 
 
