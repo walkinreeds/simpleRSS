@@ -1,6 +1,7 @@
 #gets rss feeds and manages the database
 import feedparser
 import datetime
+import html2text
 
 class rss(object):
     def getFeed(self,url):
@@ -33,6 +34,8 @@ class rss(object):
 
         return d.feed.title, articles, d.version
 
+    def htmlToText(self,content):
+        return html2text.html2text(content)                    
 
 if __name__ == '__main__':
     import sys

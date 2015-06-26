@@ -35,7 +35,7 @@ class mainprogram(object):
                     elif (articleListReturn[0] == 'r' or articleListReturn[0] == 'R'): #pressed r / update this feed
                         self.updateFeed(urllist[feedListReturn[1]])
                     else:
-                        self.screen.showArticle(articleContent[articleListReturn[1]])
+                        self.screen.showArticle(self.rssworker.htmlToText(articleContent[articleListReturn[1]]))
 
         return
 
@@ -50,9 +50,9 @@ class mainprogram(object):
             articleList.append("{0}    {1}".format(pubdate,article[3]))
 
             thisHeader = []
-            thisHeader.append("Title: {0}\n".format(article[3]))
-            thisHeader.append("Date:  {0}\n".format(pubdate))
-            thisHeader.append("Link:  {0}\n".format(article[2]))
+            thisHeader.append("Title: {0}<br>".format(article[3]))
+            thisHeader.append("Date:  {0}<br>".format(pubdate))
+            thisHeader.append("Link:  {0}<br>".format(article[2]))
             articleContent.append(''.join(thisHeader)+article[4])
 
         return articleList, articleContent
