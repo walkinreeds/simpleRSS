@@ -13,28 +13,42 @@ class mainprogram(object):
 
         self.screen.showInterface(0);
         #mainloop
+        feedPadY = 0
+        selectedFeed = 0;
         while(1):
             urllist, namelist = self.getFeedList(os.path.join(configpath,'urls')) #get urls
-            feedListReturn = self.screen.showList(namelist)
+            feedListReturn = self.screen.showList(namelist, feedPadY, selectedFeed)
             if feedListReturn[0] == 'q': #pressed q / exit app
                 self.screen.close()
                 break;
             elif feedListReturn[0] == 'r': #pressed r / update selected feed
-                self.updateFeed(urllist[feedListReturn[1]])
+                selectedFeed = feedListReturn[2]
+                feedPadY = feedListReturn[1]
+                self.updateFeed(urllist[selectedFeed])
             elif feedListReturn[0] == 'R': #pressed R / update all feeds
+                selectedFeed = feedListReturn[2]
+                feedPadY = feedListReturn[1]
                 for feed in urllist:
                     self.screen.setStatus('Updating: {0}'.format(feed))
                     self.updateFeed(feed)
 
-            else: #feedlist
+            elif feedListReturn[0] == 'return': #feedlist
+                selectedFeed = feedListReturn[2]
+                feedPadY = feedListReturn[1]
+                selectedArticle = 0
+                articlePadY = 0
                 while(1):
-                    articleList,articleContent = self.getArticleList(urllist[feedListReturn[1]])
-                    articleListReturn = self.screen.showList(articleList)
+                    articleList,articleContent = self.getArticleList(urllist[selectedFeed])
+                    articleListReturn = self.screen.showList(articleList, articlePadY, selectedArticle)
                     if (articleListReturn[0] == 'q'):
                         break;
                     elif (articleListReturn[0] == 'r' or articleListReturn[0] == 'R'): #pressed r / update this feed
-                        self.updateFeed(urllist[feedListReturn[1]])
-                    else:
+                        selectedArticle = articleListReturn[2]
+                        articlePadY = articleListReturn[1]
+                        self.updateFeed(urllist[selectedArticle])
+                    elif (articleListReturn[0] == 'return'):
+                        selectedArticle = articleListReturn[2]
+                        articlePadY = articleListReturn[1]
                         self.screen.showArticle(self.rssworker.htmlToText(articleContent[articleListReturn[1]]))
 
         return
