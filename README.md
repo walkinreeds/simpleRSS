@@ -17,12 +17,15 @@ Dependencies (Python modules):
 
 **This app is not ready to use yet, it's not finished and contains bugs.**
 
-Tasks:
+Tasks for 0.1 release:
 - [x] Get and parse feeds
 - [x] Store feeds in the database
 - [x] Show List of Feeds, List of Articles and Articles
-- [/] Read/Unread articles
-- [ ] Article Links in the end (like newsbeuter)
-- [ ] Config file to change colors
-- [ ] Show article images (with w3m or similar)
+- [x] Open Articles in Browser
+- [x] Config file (set default browser, other settings will be implemented as needed)
+- [/] Read/Unread articles (in progress)
 - [ ] Detect terminal resize (curses.update_lines_cols() )
+- [ ] Article Links in the end (like newsbeuter)
+- [ ] Show article images (with w3m or similar)
+- [ ] Choose colors in config file 
+- [ ] Open Help in ? key
