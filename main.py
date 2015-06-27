@@ -7,16 +7,22 @@ class mainprogram(object):
     def __init__(self):
         #intantiate classes
         configpath = self.getConfigPath()
+        config, urlsfile = self.getConfigs()
         self.database = database(os.path.join(configpath,'database.db3'))
         self.screen = screen()
         self.rssworker = rss()
 
+        #check browser configs
+        if 'browser' in config.keys():
+            browser = config['browser']
+        else:
+            browser = 'xdg-open'
         #mainloop
         feedPadY = 0
         selectedFeed = 0;
         while(1):
             self.screen.showInterface(" simpleRSS v0.1 Alpha", " q:Quit,ENTER:Open,r:Reload,R:Reload All,a:Mark Feed Read,A:Mark All Read");
-            urllist, namelist,totallist,unreadlist = self.getFeedList(os.path.join(configpath,'urls')) #get urls
+            urllist, namelist,totallist,unreadlist = self.getFeedList(urlsfile) #get urls
             viewList = []
             for number in unreadlist:
                 if number > 0:
@@ -41,8 +47,8 @@ class mainprogram(object):
             elif feedListKey == 'return': #feedlist
                 selectedArticle = 0
                 articlePadY = 0
-                self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
                 while(1):
+                    self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
                     articleList,articleContent,articleViewed,articleUrl = self.getArticleList(urllist[selectedFeed])
                     articleListKey, articlePadY, selectedArticle = self.screen.showList(articleList, articlePadY, selectedArticle, articleViewed)
                     if (articleListKey == 'q'):
@@ -54,9 +60,16 @@ class mainprogram(object):
                     elif articleListKey == 'A': #mark feed read
                         self.database.setFeedViewed(urllist[selectedFeed],1)
                     elif articleListKey == 'o': #open in browser
-                        pass
+                        os.system(browser+' '+articleUrl[selectedArticle] + " > /dev/null &")
                     elif (articleListKey == 'return'):
-                        self.screen.showArticle(self.rssworker.htmlToText(articleContent[selectedArticle],self.screen.getDimensions()[1]))
+                        showArticlePadY = 0
+                        self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,o: Open in Browser");
+                        while(1):
+                            showArticleKey, showArticlePadY = self.screen.showArticle(self.rssworker.htmlToText(articleContent[selectedArticle],self.screen.getDimensions()[1]), showArticlePadY)
+                            if showArticleKey == 'q':
+                                break;
+                            elif showArticleKey == 'o':
+                                os.system(browser+' '+articleUrl[selectedArticle] + " > /dev/null 2>&1")
                         self.database.setArticleViewed(articleUrl[selectedArticle])
         return
 
@@ -130,7 +143,26 @@ class mainprogram(object):
         f.close()
         return feedUrlList, feedNameList, feedTotalList, feedUnreadList;
 
+    def getConfigs(self):
+        configFilePath = os.path.join(self.getConfigPath(),'config')
+        if (os.path.exists(configFilePath) == False):
+            f = open(configFilePath,'w')
+            f.write("")
+            f.close()
+        f = open(configFilePath,'r')
+        fileLines = f.readlines()
+        configs = {}
+        for line in fileLines:
+            if '=' in line:
+                config = line.split('=')
+                config[0] = config[0].strip()
+                config[1] = config[1].strip()
+                configs[config[0]] = config[1]
+        f.close()
 
+        urlFilePath = os.path.join(self.getConfigPath(),'urls')
+        return configs,urlFilePath
+        
     def getConfigPath(self):
         homefolder = os.path.expanduser('~')
         configfolder = os.path.join(homefolder, '.cursesrss')
