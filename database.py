@@ -65,11 +65,22 @@ class database(object):
         articleList = c.fetchall()
         return articleList
 
-    def setArticleViewed(self, articleurl, viewed):
+    def setArticleViewed(self, articleurl, viewed = 1):
         c = self.conn.cursor()
         c.execute("UPDATE articles SET viewed = ? WHERE url = ?", (viewed, articleurl))
         self.conn.commit()
         return
+
+    def setFeedViewed(self, feedurl, viewed = 1):
+        c = self.conn.cursor()
+        md5feedUrl=hashlib.md5(feedurl.encode('utf-8')).hexdigest()
+        c.execute("UPDATE articles SET viewed = ? WHERE feed = ?", (viewed, md5feedUrl))
+        self.conn.commit()
+
+    def setAllViewed(self, viewed = 1):
+        c = self.conn.cursor()
+        c.execute("UPDATE articles SET viewed = ?", (viewed,))
+        self.conn.commit()
 #
 #databaseTest = database('/home/bruno/.cursesrss/database.db3')
 #url = 'http://www.archlinux.org/feed/news/'
