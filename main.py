@@ -15,43 +15,49 @@ class mainprogram(object):
         feedPadY = 0
         selectedFeed = 0;
         while(1):
-            self.screen.showInterface(" simpleRSS v0.1 Alpha - {0} unread".format(0), " q:Quit,ENTER:Open,r:Reload,R:Reload All,a:Mark Feed Read,A:Mark All Read");
+            self.screen.showInterface(" simpleRSS v0.1 Alpha", " q:Quit,ENTER:Open,r:Reload,R:Reload All,a:Mark Feed Read,A:Mark All Read");
             urllist, namelist,totallist,unreadlist = self.getFeedList(os.path.join(configpath,'urls')) #get urls
-            feedListReturn = self.screen.showList(namelist, feedPadY, selectedFeed)
-            if feedListReturn[0] == 'q': #pressed q / exit app
+            viewList = []
+            for number in unreadlist:
+                if number > 0:
+                    viewList.append(0)
+                else:
+                    viewList.append(1)
+            feedListKey,feedPadY,selectedFeed = self.screen.showList(namelist, feedPadY, selectedFeed, viewList)
+            if feedListKey == 'q': #pressed q / exit app
                 self.screen.close()
                 break;
-            elif feedListReturn[0] == 'r': #pressed r / update selected feed
-                selectedFeed = feedListReturn[2]
-                feedPadY = feedListReturn[1]
+            elif feedListKey == 'r': #pressed r / update selected feed
                 self.updateFeed(urllist[selectedFeed])
-            elif feedListReturn[0] == 'R': #pressed R / update all feeds
-                selectedFeed = feedListReturn[2]
-                feedPadY = feedListReturn[1]
+            elif feedListKey == 'R': #pressed R / update all feeds
                 for feed in urllist:
                     self.screen.setStatus('Updating: {0}'.format(feed))
                     self.updateFeed(feed)
-
-            elif feedListReturn[0] == 'return': #feedlist
-                selectedFeed = feedListReturn[2]
-                feedPadY = feedListReturn[1]
+                self.updateFeed("Done")
+            elif feedListKey == 'a': #mark feed as read
+                self.database.setFeedViewed(urllist[selectedFeed],1)
+            elif feedListKey == 'A': #mark all read
+                self.database.setAllViewed(1)
+            elif feedListKey == 'return': #feedlist
                 selectedArticle = 0
                 articlePadY = 0
                 self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
                 while(1):
                     articleList,articleContent,articleViewed,articleUrl = self.getArticleList(urllist[selectedFeed])
-                    articleListReturn = self.screen.showList(articleList, articlePadY, selectedArticle, articleViewed)
-                    if (articleListReturn[0] == 'q'):
+                    articleListKey, articlePadY, selectedArticle = self.screen.showList(articleList, articlePadY, selectedArticle, articleViewed)
+                    if (articleListKey == 'q'):
                         break;
-                    elif (articleListReturn[0] == 'r' or articleListReturn[0] == 'R'): #pressed r / update this feed
-                        selectedArticle = articleListReturn[2]
-                        articlePadY = articleListReturn[1]
+                    elif (articleListKey == 'r' or articleListKey == 'R'): #pressed r / update this feed
                         self.updateFeed(urllist[selectedArticle])
-                    elif (articleListReturn[0] == 'return'):
-                        selectedArticle = articleListReturn[2]
-                        articlePadY = articleListReturn[1]
+                    elif articleListKey == 'a': #mark article read
+                        self.database.setArticleViewed(articleUrl[selectedArticle])
+                    elif articleListKey == 'A': #mark feed read
+                        self.database.setFeedViewed(urllist[selectedFeed],1)
+                    elif articleListKey == 'o': #open in browser
+                        pass
+                    elif (articleListKey == 'return'):
                         self.screen.showArticle(self.rssworker.htmlToText(articleContent[selectedArticle],self.screen.getDimensions()[1]))
-                        self.database.setArticleViewed(articleUrl[selectedArticle],1)
+                        self.database.setArticleViewed(articleUrl[selectedArticle])
         return
 
 
