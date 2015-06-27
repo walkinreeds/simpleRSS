@@ -95,7 +95,7 @@ class screen(object):
             elif c == ord('a'):
                 return 'a',padY,selectedItem
             elif c == ord('o'):
-                return 'o',padY,selectedITem
+                return 'o',padY,selectedItem
 
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
 
