@@ -99,12 +99,11 @@ class screen(object):
 
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
 
-    def showArticle(self, content):
+    def showArticle(self, content, padY = 0):
         #split content in lines
         content = content.split('\n')
         pad = curses.newpad(len(content)+1,curses.COLS)
         pad.keypad(1)
-        padY = 0;
         for i in range(0,len(content)):
             pad.addstr(i,0,content[i])
         #fill blank lines to overwrite old content
@@ -124,9 +123,11 @@ class screen(object):
                 if (padY > 0):
                     padY -= 1
             elif c == ord('q') or c == curses.KEY_LEFT or c == ord('h'):
-                return ('q',)
+                return 'q',padY
             elif c == 10 or c == curses.KEY_RIGHT or c == ord('l'): #enter
                 pass
+            elif c == ord('o'):
+                return 'o',padY
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
 
     def getDimensions(self):
