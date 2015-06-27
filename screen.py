@@ -36,13 +36,16 @@ class screen(object):
         self.stdscr.refresh()
         return
 
-    def showList(self, items, padY = 0, selectedItem = 0):
+    def showList(self, items, padY = 0, selectedItem = 0, boldItems = 0):
         nrItems = len(items);
         #feed list
         pad = curses.newpad(nrItems+1,curses.COLS)
         pad.keypad(1)
         for i in range(0,nrItems):
             pad.addstr(i, 0, " {0}{1}".format(items[i], " "*(curses.COLS - len(items[i]))))
+            if boldItems != 0:
+                if boldItems[i] == 0:
+                    pad.chgat(i,0,-1,curses.A_BOLD)
 
         #fill blank lines to overwrite old content
         if(nrItems < curses.LINES - 3):
@@ -57,7 +60,11 @@ class screen(object):
             c = pad.getch()
             if c == ord('j') or c == curses.KEY_DOWN:
                 if (selectedItem < nrItems - 1):
-                    pad.chgat(selectedItem,0,-1,curses.A_NORMAL);
+                    lastAttr = curses.A_NORMAL
+                    if boldItems != 0:
+                        if boldItems[selectedItem] == 0:
+                            lastAttr = curses.A_BOLD
+                    pad.chgat(selectedItem,0,-1,lastAttr)
                     selectedItem+=1;
                     pad.chgat(selectedItem,0,-1,curses.A_REVERSE);
                     #scroll down when we reach the end
@@ -65,7 +72,11 @@ class screen(object):
                         padY = selectedItem - (curses.LINES - 4) + 1
             elif c == ord('k') or c == curses.KEY_UP:
                 if (selectedItem > 0):
-                    pad.chgat(selectedItem,0,-1,curses.A_NORMAL);
+                    lastAttr = curses.A_NORMAL
+                    if boldItems != 0:
+                        if boldItems[selectedItem] == 0:
+                            lastAttr = curses.A_BOLD
+                    pad.chgat(selectedItem,0,-1,lastAttr)
                     selectedItem-=1;
                     pad.chgat(selectedItem,0,-1,curses.A_REVERSE);
                     #scroll up when we want a item that isnt showing
