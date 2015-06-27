@@ -23,7 +23,7 @@ Tasks for 0.1 release:
 - [x] Show List of Feeds, List of Articles and Articles
 - [x] Open Articles in Browser
 - [x] Config file (set default browser, other settings will be implemented as needed)
-- [/] Read/Unread articles (in progress)
+- [ ] Read/Unread articles (in progress)
 - [ ] Detect terminal resize (curses.update_lines_cols() )
 - [ ] Article Links in the end (like newsbeuter)
 - [ ] Show article images (with w3m or similar)
