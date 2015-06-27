@@ -16,7 +16,7 @@ class mainprogram(object):
         selectedFeed = 0;
         while(1):
             self.screen.showInterface(" simpleRSS v0.1 Alpha - {0} unread".format(0), " q:Quit,ENTER:Open,r:Reload,R:Reload All,a:Mark Feed Read,A:Mark All Read");
-            urllist, namelist = self.getFeedList(os.path.join(configpath,'urls')) #get urls
+            urllist, namelist,totallist,unreadlist = self.getFeedList(os.path.join(configpath,'urls')) #get urls
             feedListReturn = self.screen.showList(namelist, feedPadY, selectedFeed)
             if feedListReturn[0] == 'q': #pressed q / exit app
                 self.screen.close()
@@ -37,9 +37,10 @@ class mainprogram(object):
                 feedPadY = feedListReturn[1]
                 selectedArticle = 0
                 articlePadY = 0
+                self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
                 while(1):
-                    articleList,articleContent = self.getArticleList(urllist[selectedFeed])
-                    articleListReturn = self.screen.showList(articleList, articlePadY, selectedArticle)
+                    articleList,articleContent,articleViewed,articleUrl = self.getArticleList(urllist[selectedFeed])
+                    articleListReturn = self.screen.showList(articleList, articlePadY, selectedArticle, articleViewed)
                     if (articleListReturn[0] == 'q'):
                         break;
                     elif (articleListReturn[0] == 'r' or articleListReturn[0] == 'R'): #pressed r / update this feed
@@ -50,7 +51,7 @@ class mainprogram(object):
                         selectedArticle = articleListReturn[2]
                         articlePadY = articleListReturn[1]
                         self.screen.showArticle(self.rssworker.htmlToText(articleContent[selectedArticle],self.screen.getDimensions()[1]))
-
+                        self.database.setArticleViewed(articleUrl[selectedArticle],1)
         return
 
 
@@ -58,6 +59,8 @@ class mainprogram(object):
         feed = self.database.getArticles(feedurl)
         articleList = [];
         articleContent = []
+        articleViewed = []
+        articleUrl = []
         for article in feed:
             datetimetuple = article[5].split(",")
             pubdate = "{0}/{1}/{2}".format(datetimetuple[0],datetimetuple[1],datetimetuple[2])
@@ -70,7 +73,9 @@ class mainprogram(object):
             thisHeader.append("<hr>")
             articleContent.append(''.join(thisHeader)+article[4])
 
-        return articleList, articleContent
+            articleViewed.append(int(article[6]))
+            articleUrl.append(article[2])
+        return articleList, articleContent, articleViewed, articleUrl
 
 
     def updateFeed(self, feedurl):
@@ -106,15 +111,18 @@ class mainprogram(object):
         f = open(urlFile, 'r')
         feedNameList = []
         feedUrlList = []
+        feedTotalList = []
+        feedUnreadList = []
         for url in f.readlines():
             feedUrlList.append(url)
-            feedName = self.database.getFeedInfo(url)
-            if (feedName == ""):
-                feedNameList.append(url)
-            else:
-                feedNameList.append(feedName)
+            feedName,totalArticles,unreadArticles = self.database.getFeedInfo(url)
+            feedTotalList.append(totalArticles)
+            feedUnreadList.append(unreadArticles)
+            unreadArticles = str(unreadArticles)
+            totalArticles = str(totalArticles)
+            feedNameList.append("({0}/{1})\t{2}".format(unreadArticles.zfill(2),totalArticles.zfill(2),feedName))
         f.close()
-        return feedUrlList, feedNameList
+        return feedUrlList, feedNameList, feedTotalList, feedUnreadList;
 
 
     def getConfigPath(self):
