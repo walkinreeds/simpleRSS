@@ -30,8 +30,13 @@ class database(object):
         c.execute("SELECT name FROM feeds WHERE urlhash = '{0}'".format(md5url))
         name = c.fetchone()
         if (name == None):
-            return ""
-        return name[0]
+            return url,0,0
+
+        c.execute("SELECT COUNT(*) FROM articles WHERE feed = ?",(md5url,))
+        articlesTotal = int(c.fetchone()[0])
+        c.execute("SELECT COUNT(*) FROM articles WHERE feed = ? AND viewed = 0",(md5url,))
+        articlesNotRead = int(c.fetchone()[0])
+        return name[0],articlesTotal,articlesNotRead
 
     def addFeed(self,url,name):
         try:
@@ -57,10 +62,13 @@ class database(object):
         c = self.conn.cursor()
         md5feedUrl=hashlib.md5(feedurl.encode('utf-8')).hexdigest()
         c.execute("SELECT * FROM articles WHERE feed = ? ORDER BY pubdatetime DESC",(md5feedUrl,))
-        return c.fetchall()
+        articleList = c.fetchall()
+        return articleList
 
     def setArticleViewed(self, articleurl, viewed):
-        #TODO
+        c = self.conn.cursor()
+        c.execute("UPDATE articles SET viewed = ? WHERE url = ?", (viewed, articleurl))
+        self.conn.commit()
         return
 #
 #databaseTest = database('/home/bruno/.cursesrss/database.db3')
