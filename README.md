@@ -25,4 +25,4 @@ Tasks:
 - [ ] Article Links in the end (like newsbeuter)
 - [ ] Config file to change colors
 - [ ] Show article images (with w3m or similar)
-
+- [ ] Detect terminal resize (curses.update_lines_cols() )
