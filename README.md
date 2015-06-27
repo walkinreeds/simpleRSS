@@ -21,7 +21,7 @@ Tasks:
 - [x] Get and parse feeds
 - [x] Store feeds in the database
 - [x] Show List of Feeds, List of Articles and Articles
-- [ ] Read/Unread articles
+- [/] Read/Unread articles
 - [ ] Article Links in the end (like newsbeuter)
 - [ ] Config file to change colors
 - [ ] Show article images (with w3m or similar)
