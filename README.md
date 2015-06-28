@@ -25,7 +25,7 @@ Tasks for 0.1 release:
 - [x] Config file (set default browser, other settings will be implemented as needed)
 - [x] Read/Unread articles
 - [x] Detect terminal resize
-- [ ] Article Links in the end (like newsbeuter)
+- [x] Article Links in the end (like newsbeuter)
 - [ ] Show article images (with w3m or similar)
 - [ ] Choose colors in config file
 - [ ] Open Help in ? key
