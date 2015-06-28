@@ -24,7 +24,7 @@ Tasks for 0.1 release:
 - [x] Open Articles in Browser
 - [x] Config file (set default browser, other settings will be implemented as needed)
 - [x] Read/Unread articles
-- [ ] Detect terminal resize (curses.update_lines_cols() )
+- [x] Detect terminal resize
 - [ ] Article Links in the end (like newsbeuter)
 - [ ] Show article images (with w3m or similar)
 - [ ] Choose colors in config file
