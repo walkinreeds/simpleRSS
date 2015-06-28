@@ -96,6 +96,10 @@ class screen(object):
                 return 'a',padY,selectedItem
             elif c == ord('o'):
                 return 'o',padY,selectedItem
+            elif c == ord('U'):
+                return 'U',padY,selectedItem
+            elif c == ord('u'):
+                return 'u',padY,selectedItem
 
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
 
@@ -128,6 +132,8 @@ class screen(object):
                 pass
             elif c == ord('o'):
                 return 'o',padY
+            elif c == ord('u'):
+                return 'u',padY
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
 
     def getDimensions(self):
