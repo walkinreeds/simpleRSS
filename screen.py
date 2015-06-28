@@ -38,7 +38,7 @@ class screen(object):
         if bottomMsg == -1:
             bottomMsg = self.bottomMsg
         else:
-            self.bottomMsg = topMsg
+            self.bottomMsg = bottomMsg
 
         if curses.has_colors():
             self.stdscr.addstr(0,0, topMsg+(" "*(curses.COLS - len(topMsg))), curses.color_pair(1));
