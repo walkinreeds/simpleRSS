@@ -33,36 +33,36 @@ Tasks for 0.1 release:
 
 ###Keys
 ####Feed List
-j,Down Arrow - Select next item
-k,Up Arrow	 - Select previous item
-l, Enter	 - Enter feed
-h, q		 - Quit
-a			 - Mark selected feed as read
-A			 - Mark all feeds read
-r			 - Reload selected feed
-R			 - Reload all feeds
+* j,Down Arrow - Select next item
+* k,Up Arrow	 - Select previous item
+* l, Enter	 - Enter feed
+* h, q		 - Quit
+* a			 - Mark selected feed as read
+* A			 - Mark all feeds read
+* r			 - Reload selected feed
+* R			 - Reload all feeds
 **to be implemented**
-u			 - Mark selected feed as unread
-U			 - Mark all feeds as unread
+* u			 - Mark selected feed as unread
+* U			 - Mark all feeds as unread
 
 ####Article List
-j,Down Arrow - Select next item
-k,Up Arrow	 - Select previous item
-l, Enter	 - Show article
-h, q		 - Go back to Feed List
-a			 - Mark selected article as read
-A			 - Mark feed articles in read
-r			 - Reload this feed
-o			 - Open this article in browser
+* j,Down Arrow - Select next item
+* k,Up Arrow	 - Select previous item
+* l, Enter	 - Show article
+* h, q		 - Go back to Feed List
+* a			 - Mark selected article as read
+* A			 - Mark feed articles in read
+* r			 - Reload this feed
+* o			 - Open this article in browser
 **to be implemented**
-u			 - Mark selected article as unread
-U			 - Mark all feed articles as unread
+* u			 - Mark selected article as unread
+* U			 - Mark all feed articles as unread
 
 ####Article Content
-j,Down Arrow - Select next item
-k,Up Arrow	 - Select previous item
-l, Enter	 - Show article
-h, q		 - Go back to Article List
-o			 - Open this article in browser
+* j,Down Arrow - Select next item
+* k,Up Arrow	 - Select previous item
+* l, Enter	 - Show article
+* h, q		 - Go back to Article List
+* o			 - Open this article in browser
 **to be implemented**
-u			 - Mark this article as unread
+* u			 - Mark this article as unread
