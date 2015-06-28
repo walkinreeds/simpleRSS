@@ -68,7 +68,7 @@ class mainprogram(object):
                     elif articleListKey == 'U': #mark feed NOT read
                         self.database.setFeedViewed(urllist[selectedFeed],0)
                     elif articleListKey == 'o': #open in browser
-                        os.system(browser+' '+articleUrl[selectedArticle] + " > /dev/null &")
+                        os.system(browser+' '+articleUrl[selectedArticle] + " > /dev/null 2>&1")
                     elif (articleListKey == 'return'):
                         showArticlePadY = 0
                         self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,o: Open in Browser");
