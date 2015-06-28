@@ -41,6 +41,7 @@ Tasks for 0.1 release:
 * A			 - Mark all feeds read
 * r			 - Reload selected feed
 * R			 - Reload all feeds
+
 **to be implemented**
 * u			 - Mark selected feed as unread
 * U			 - Mark all feeds as unread
@@ -54,6 +55,7 @@ Tasks for 0.1 release:
 * A			 - Mark feed articles in read
 * r			 - Reload this feed
 * o			 - Open this article in browser
+
 **to be implemented**
 * u			 - Mark selected article as unread
 * U			 - Mark all feed articles as unread
@@ -64,5 +66,6 @@ Tasks for 0.1 release:
 * l, Enter	 - Show article
 * h, q		 - Go back to Article List
 * o			 - Open this article in browser
+
 **to be implemented**
 * u			 - Mark this article as unread
