@@ -13,7 +13,7 @@ My goal is to make something like newsbeuter but with image support and maybe ca
 Dependencies (Python modules):
   * feedparser
   * html2text
- 
+
 
 **This app is not ready to use yet, it's not finished and contains bugs.**
 
@@ -23,11 +23,11 @@ Tasks for 0.1 release:
 - [x] Show List of Feeds, List of Articles and Articles
 - [x] Open Articles in Browser
 - [x] Config file (set default browser, other settings will be implemented as needed)
-- [ ] Read/Unread articles (in progress)
+- [x] Read/Unread articles
 - [ ] Detect terminal resize (curses.update_lines_cols() )
 - [ ] Article Links in the end (like newsbeuter)
 - [ ] Show article images (with w3m or similar)
-- [ ] Choose colors in config file 
+- [ ] Choose colors in config file
 - [ ] Open Help in ? key
 
 
@@ -41,8 +41,6 @@ Tasks for 0.1 release:
 * A			 - Mark all feeds read
 * r			 - Reload selected feed
 * R			 - Reload all feeds
-
-**to be implemented**
 * u			 - Mark selected feed as unread
 * U			 - Mark all feeds as unread
 
@@ -55,8 +53,6 @@ Tasks for 0.1 release:
 * A			 - Mark feed articles in read
 * r			 - Reload this feed
 * o			 - Open this article in browser
-
-**to be implemented**
 * u			 - Mark selected article as unread
 * U			 - Mark all feed articles as unread
 
@@ -66,6 +62,4 @@ Tasks for 0.1 release:
 * l, Enter	 - Show article
 * h, q		 - Go back to Article List
 * o			 - Open this article in browser
-
-**to be implemented**
 * u			 - Mark this article as unread
