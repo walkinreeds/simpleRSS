@@ -113,6 +113,8 @@ class screen(object):
                 return 'U',padY,selectedItem
             elif c == ord('u'):
                 return 'u',padY,selectedItem
+            elif c == ord('?') or c == curses.KEY_F1:
+                return '?',padY,selectedItem
             elif c == curses.KEY_RESIZE: #terminal resized
                 self.resizeWindow()
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
@@ -157,6 +159,8 @@ class screen(object):
                 return 'u',padY
             elif c == curses.KEY_RESIZE: #terminal resized
                 self.resizeWindow()
+            elif c == ord('?') or c == curses.KEY_F1:
+                return '?',padY
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
 
     def getDimensions(self):

@@ -48,6 +48,8 @@ class mainprogram(object):
                 self.database.setFeedViewed(urllist[selectedFeed],0)
             elif feedListKey == 'U': #mark all NOT read
                 self.database.setAllViewed(0)
+            elif feedListKey == '?': #help
+                self.showHelp() 
             elif feedListKey == 'return': #feedlist
                 selectedArticle = 0
                 articlePadY = 0
@@ -69,6 +71,8 @@ class mainprogram(object):
                         self.database.setFeedViewed(urllist[selectedFeed],0)
                     elif articleListKey == 'o': #open in browser
                         os.system(browser+' '+articleUrl[selectedArticle] + " > /dev/null 2>&1")
+                    elif articleListKey == '?': #help
+                        self.showHelp() 
                     elif (articleListKey == 'return'):
                         showArticlePadY = 0
                         self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,o: Open in Browser");
@@ -79,8 +83,10 @@ class mainprogram(object):
                                 break;
                             elif showArticleKey == 'o':
                                 os.system(browser+' '+articleUrl[selectedArticle] + " > /dev/null 2>&1")
-                            elif articleListKey == 'u': #mark article NOT read
+                            elif showArticleKey == 'u': #mark article NOT read
                                 self.database.setArticleViewed(articleUrl[selectedArticle],0)
+                            elif showArticleKey == '?': #help
+                                self.showHelp() 
         return
 
 
@@ -180,5 +186,43 @@ class mainprogram(object):
             os.mkdir(configfolder)
         return configfolder
 
+    def showHelp(self):
+        self.screen.showInterface("simpleRSS - Help","q - Quit")
+        helpContent = """<h1>Keys</h1><h2>Feed List</h2><ul>
+                         <li>j,Down Arrow - Select next item</li>
+                         <li>k,Up Arrow     - Select previous item</li>
+                         <li>l, Enter   - Enter feed</li>
+                         <li>h, q       - Quit</li>
+                         <li>a          - Mark selected feed as read</li>
+                         <li>A          - Mark all feeds read</li>
+                         <li>r          - Reload selected feed</li>
+                         <li>R          - Reload all feeds</li>
+                         <li>u          - Mark selected feed as unread</li>
+                         <li>U          - Mark all feeds as unread</li>
+                         </ul>
+                         <h2>Article List</h2>
+                         <ul>
+                         <li>j,Down Arrow - Select next item</li>
+                         <li>k,Up Arrow     - Select previous item</li>
+                         <li>l, Enter   - Show article</li>
+                         <li>h, q       - Go back to Feed List</li>
+                         <li>a          - Mark selected article as read</li>
+                         <li>A          - Mark feed articles in read</li>
+                         <li>r          - Reload this feed</li>
+                         <li>o          - Open this article in browser</li>
+                         <li>u          - Mark selected article as unread</li>
+                         <li>U          - Mark all feed articles as unread</li>
+                         </ul>
+                         <h2>Article Content</h2>
+                         <ul>
+                         <li>j,Down Arrow - Select next item</li>
+                         <li>k,Up Arrow     - Select previous item</li>
+                         <li>l, Enter   - Show article</li>
+                         <li>h, q       - Go back to Article List</li>
+                         <li>o          - Open this article in browser</li>
+                         <li>u          - Mark this article as unread</li>
+                         </ul>"""
+        showArticleKey, showArticlePadY = self.screen.showArticle(self.rssworker.htmlToText(helpContent,self.screen.getDimensions()[1]))
+        return
 #
 prog = mainprogram()
