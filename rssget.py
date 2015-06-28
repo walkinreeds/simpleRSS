@@ -37,6 +37,7 @@ class rss(object):
     def htmlToText(self,content,cols):
         parser = html2text.HTML2Text()                    
         parser.body_width = cols
+        parser.inline_links = False
         return parser.handle(content)
 
 if __name__ == '__main__':
