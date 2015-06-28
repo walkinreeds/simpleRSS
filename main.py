@@ -44,6 +44,10 @@ class mainprogram(object):
                 self.database.setFeedViewed(urllist[selectedFeed],1)
             elif feedListKey == 'A': #mark all read
                 self.database.setAllViewed(1)
+            elif feedListKey == 'u': #mark feed as NOT read
+                self.database.setFeedViewed(urllist[selectedFeed],0)
+            elif feedListKey == 'U': #mark all NOT read
+                self.database.setAllViewed(0)
             elif feedListKey == 'return': #feedlist
                 selectedArticle = 0
                 articlePadY = 0
@@ -59,18 +63,24 @@ class mainprogram(object):
                         self.database.setArticleViewed(articleUrl[selectedArticle])
                     elif articleListKey == 'A': #mark feed read
                         self.database.setFeedViewed(urllist[selectedFeed],1)
+                    elif articleListKey == 'u': #mark article NOT read
+                        self.database.setArticleViewed(articleUrl[selectedArticle],0)
+                    elif articleListKey == 'U': #mark feed NOT read
+                        self.database.setFeedViewed(urllist[selectedFeed],0)
                     elif articleListKey == 'o': #open in browser
                         os.system(browser+' '+articleUrl[selectedArticle] + " > /dev/null &")
                     elif (articleListKey == 'return'):
                         showArticlePadY = 0
                         self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,o: Open in Browser");
+                        self.database.setArticleViewed(articleUrl[selectedArticle])
                         while(1):
                             showArticleKey, showArticlePadY = self.screen.showArticle(self.rssworker.htmlToText(articleContent[selectedArticle],self.screen.getDimensions()[1]), showArticlePadY)
                             if showArticleKey == 'q':
                                 break;
                             elif showArticleKey == 'o':
                                 os.system(browser+' '+articleUrl[selectedArticle] + " > /dev/null 2>&1")
-                        self.database.setArticleViewed(articleUrl[selectedArticle])
+                            elif articleListKey == 'u': #mark article NOT read
+                                self.database.setArticleViewed(articleUrl[selectedArticle],0)
         return
 
 
