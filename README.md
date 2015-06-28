@@ -26,9 +26,9 @@ Tasks for 0.1 release:
 - [x] Read/Unread articles
 - [x] Detect terminal resize
 - [x] Article Links in the end (like newsbeuter)
-- [ ] Show article images (with w3m or similar)
+- [ ] Show article images (with w3m or similar) **delayed to 0.2**
 - [ ] Choose colors in config file
-- [ ] Open Help in ? key
+- [x] Open Help in ? key
 
 
 ###Keys
