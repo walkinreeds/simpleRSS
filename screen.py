@@ -12,6 +12,9 @@ class screen(object):
             curses.cbreak()
             curses.curs_set(0)
             self.stdscr.keypad(1)
+            #these need to go global because we will handle window resize here
+            self.topMsg = ""
+            self.bottomMsg = ""
         except:
             #error ocurred, restore terminal
             self.stdscr.keypad(0)
@@ -26,13 +29,23 @@ class screen(object):
         curses.nocbreak()
         curses.endwin()
 
-    def showInterface(self, top_msg = "simpleRSS", bottom_msg = ""):
-        if curses.has_colors():
-            self.stdscr.addstr(0,0, top_msg+(" "*(curses.COLS - len(top_msg))), curses.color_pair(1));
-            self.stdscr.addstr(curses.LINES-3,0, bottom_msg+(" "*(curses.COLS - len(bottom_msg))), curses.color_pair(1));
+    def showInterface(self, topMsg = -1, bottomMsg = -1):
+        if topMsg == -1:
+            topMsg = self.topMsg
         else:
-            self.stdscr.addstr(0,0, top_msg+(" "*(curses.COLS - len(top_msg))) );
-            self.stdscr.addstr(curses.LINES-3,0, bottom_msg+(" "*(curses.COLS - len(bottom_msg))) );
+            self.topMsg = topMsg
+
+        if bottomMsg == -1:
+            bottomMsg = self.bottomMsg
+        else:
+            self.bottomMsg = topMsg
+
+        if curses.has_colors():
+            self.stdscr.addstr(0,0, topMsg+(" "*(curses.COLS - len(topMsg))), curses.color_pair(1));
+            self.stdscr.addstr(curses.LINES-3,0, bottomMsg+(" "*(curses.COLS - len(bottomMsg))), curses.color_pair(1));
+        else:
+            self.stdscr.addstr(0,0, topMsg+(" "*(curses.COLS - len(topMsg))) );
+            self.stdscr.addstr(curses.LINES-3,0, bottomMsg+(" "*(curses.COLS - len(bottomMsg))) );
         self.stdscr.refresh()
         return
 
@@ -51,10 +64,10 @@ class screen(object):
         if(nrItems < curses.LINES - 3):
             for z in range(nrItems + 1, curses.LINES-3):
                 self.stdscr.addstr(z, 0, " "*curses.COLS);
-
+        
+        self.stdscr.refresh()
         pad.chgat(selectedItem,0,-1,curses.A_REVERSE);
         pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
-        self.stdscr.refresh()
 
         while (1):
             c = pad.getch()
@@ -100,8 +113,16 @@ class screen(object):
                 return 'U',padY,selectedItem
             elif c == ord('u'):
                 return 'u',padY,selectedItem
-
+            elif c == curses.KEY_RESIZE: #terminal resized
+                self.resizeWindow()
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
+
+    def resizeWindow(self):
+        y, x = self.stdscr.getmaxyx()
+        curses.resizeterm(y,x)
+        self.stdscr.clear()
+        self.showInterface()
+        return
 
     def showArticle(self, content, padY = 0):
         #split content in lines
@@ -134,6 +155,8 @@ class screen(object):
                 return 'o',padY
             elif c == ord('u'):
                 return 'u',padY
+            elif c == curses.KEY_RESIZE: #terminal resized
+                self.resizeWindow()
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
 
     def getDimensions(self):
