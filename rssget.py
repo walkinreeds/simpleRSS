@@ -34,9 +34,11 @@ class rss(object):
 
         return d.feed.title, articles, d.version
 
-    def htmlToText(self,content,cols):
+    def htmlToText(self,content,cols, showImgTags = False):
         parser = html2text.HTML2Text()                    
         parser.body_width = cols
+        parser.images_with_size = showImgTags
+        #parser.images_to_alt = not(showImgTags)
         parser.inline_links = False
         return parser.handle(content)
 
