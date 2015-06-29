@@ -65,6 +65,11 @@ class screen(object):
             for z in range(nrItems + 1, curses.LINES-3):
                 self.stdscr.addstr(z, 0, " "*curses.COLS);
         
+
+        if (selectedItem >= curses.LINES - 4):
+            padY = selectedItem - (curses.LINES - 4) + 1
+
+
         self.stdscr.refresh()
         pad.chgat(selectedItem,0,-1,curses.A_REVERSE);
         pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
@@ -117,6 +122,7 @@ class screen(object):
                 return '?',padY,selectedItem
             elif c == curses.KEY_RESIZE: #terminal resized
                 self.resizeWindow()
+                return '0',padY,selectedItem
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
 
     def resizeWindow(self):
@@ -138,13 +144,19 @@ class screen(object):
             for z in range(len(content) + 1, curses.LINES-3):
                 self.stdscr.addstr(z, 0, " "*curses.COLS);
 
+        #fix when window get resized
+        if padY >= len(content) - curses.LINES + 2:
+            padY = len(content) - curses.LINES + 2
+        if len(content) <= curses.LINES - 4: #if the content fits the window show from the beggining
+            padY = 0
+        #end fix
 
         pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
         self.stdscr.refresh()
         while(1):
             c = pad.getch()
             if c == ord('j') or c == curses.KEY_DOWN:
-                if padY < len(content) and len(content) > curses.LINES - 4:
+                if padY <= len(content) - curses.LINES + 2:
                     padY += 1;
             elif c == ord('k') or c == curses.KEY_UP:
                 if (padY > 0):
@@ -157,12 +169,13 @@ class screen(object):
                 return 'o',padY
             elif c == ord('u'):
                 return 'u',padY
-            elif c == curses.KEY_RESIZE: #terminal resized
-                self.resizeWindow()
             elif c == ord('?') or c == curses.KEY_F1:
                 return '?',padY
+            elif c == curses.KEY_RESIZE: #terminal resized
+                self.resizeWindow()
+                return '0',padY
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
-
+                
     def getDimensions(self):
         return curses.LINES, curses.COLS
 
