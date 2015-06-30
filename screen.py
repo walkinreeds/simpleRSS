@@ -12,7 +12,7 @@ class screen(object):
             curses.cbreak()
             curses.curs_set(0)
             self.stdscr.keypad(1)
-            #these need to go global because we will handle window resize here
+            #these need to go global because we will handle window resize in this module
             self.topMsg = ""
             self.bottomMsg = ""
         except:
@@ -49,7 +49,7 @@ class screen(object):
         self.stdscr.refresh()
         return
 
-    def showList(self, items, padY = 0, selectedItem = 0, boldItems = 0):
+    def showList(self, items, padY = 0, selectedItem = 0, boldItems = 0, keysMoveUp = [curses.KEY_UP, ord('k')], keysMoveDown = [curses.KEY_DOWN, ord('j')], returnKeys = []):
         nrItems = len(items);
         #feed list
         pad = curses.newpad(nrItems+1,curses.COLS)
@@ -65,64 +65,61 @@ class screen(object):
             for z in range(nrItems + 1, curses.LINES-3):
                 self.stdscr.addstr(z, 0, " "*curses.COLS);
         
-
+        #fix, select current item when redraw window
         if (selectedItem >= curses.LINES - 4):
             padY = selectedItem - (curses.LINES - 4) + 1
 
 
-        self.stdscr.refresh()
-        pad.chgat(selectedItem,0,-1,curses.A_REVERSE);
-        pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
+        currAttr = curses.A_NORMAL
+        if boldItems != 0:
+            if boldItems[selectedItem] == 0:
+                currentAttr = curses.A_BOLD
+        pad.chgat(selectedItem,0,-1,curses.A_REVERSE | currentAttr);
 
+        self.stdscr.refresh()
+        pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
         while (1):
             c = pad.getch()
-            if c == ord('j') or c == curses.KEY_DOWN:
-                if (selectedItem < nrItems - 1):
+            
+            if c in keysMoveDown: #moveDown
+                if (selectedItem < nrItems-1):
                     lastAttr = curses.A_NORMAL
+                    currentAttr = curses.A_NORMAL
                     if boldItems != 0:
                         if boldItems[selectedItem] == 0:
                             lastAttr = curses.A_BOLD
+                        if boldItems[selectedItem + 1] == 0:
+                            currentAttr = curses.A_BOLD
                     pad.chgat(selectedItem,0,-1,lastAttr)
-                    selectedItem+=1;
-                    pad.chgat(selectedItem,0,-1,curses.A_REVERSE);
-                    #scroll down when we reach the end
+                    selectedItem+=1
+                    pad.chgat(selectedItem,0,-1,curses.A_REVERSE | currentAttr);
+                    #scroll down when we reach the end of the page
                     if (selectedItem >= curses.LINES - 4):
                         padY = selectedItem - (curses.LINES - 4) + 1
-            elif c == ord('k') or c == curses.KEY_UP:
+
+            elif c in keysMoveUp:#moveUp
                 if (selectedItem > 0):
                     lastAttr = curses.A_NORMAL
+                    currentAttr = curses.A_NORMAL
                     if boldItems != 0:
                         if boldItems[selectedItem] == 0:
                             lastAttr = curses.A_BOLD
+                        if boldItems[selectedItem - 1] == 0:
+                            currentAttr = curses.A_BOLD
                     pad.chgat(selectedItem,0,-1,lastAttr)
                     selectedItem-=1;
-                    pad.chgat(selectedItem,0,-1,curses.A_REVERSE);
+                    pad.chgat(selectedItem,0,-1,curses.A_REVERSE | currentAttr);
                     #scroll up when we want a item that isnt showing
                     if (selectedItem < padY):
                         padY -= 1
-            elif c == ord('q') or c == curses.KEY_LEFT or c == ord('h'):
-                return 'q',padY,selectedItem;
-            elif c == 10 or c == curses.KEY_RIGHT or c == ord('l'): #enter
-                return 'return',padY, selectedItem;
-            elif c == ord('r'):#update this feed
-                return 'r',padY,selectedItem;
-            elif c == ord('R'):
-                return 'R',padY,selectedItem
-            elif c == ord('A'):
-                return 'A',padY,selectedItem
-            elif c == ord('a'):
-                return 'a',padY,selectedItem
-            elif c == ord('o'):
-                return 'o',padY,selectedItem
-            elif c == ord('U'):
-                return 'U',padY,selectedItem
-            elif c == ord('u'):
-                return 'u',padY,selectedItem
-            elif c == ord('?') or c == curses.KEY_F1:
-                return '?',padY,selectedItem
+
+            elif c in returnKeys: #return
+                return c, padY, selectedItem
+
             elif c == curses.KEY_RESIZE: #terminal resized
                 self.resizeWindow()
                 return '0',padY,selectedItem
+ 
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
 
     def resizeWindow(self):
@@ -132,7 +129,7 @@ class screen(object):
         self.showInterface()
         return
 
-    def showArticle(self, content, padY = 0):
+    def showArticle(self, content, padY = 0, moveUpKeys = [curses.KEY_UP,ord('k')], moveDownKeys = [curses.KEY_DOWN,ord('j')], returnKeys = []):
         #split content in lines
         content = content.split('\n')
         pad = curses.newpad(len(content)+1,curses.COLS)
@@ -155,25 +152,21 @@ class screen(object):
         self.stdscr.refresh()
         while(1):
             c = pad.getch()
-            if c == ord('j') or c == curses.KEY_DOWN:
-                if padY <= len(content) - curses.LINES + 2:
-                    padY += 1;
-            elif c == ord('k') or c == curses.KEY_UP:
+            if c in moveUpKeys:
                 if (padY > 0):
                     padY -= 1
-            elif c == ord('q') or c == curses.KEY_LEFT or c == ord('h'):
-                return 'q',padY
-            elif c == 10 or c == curses.KEY_RIGHT or c == ord('l'): #enter
-                pass
-            elif c == ord('o'):
-                return 'o',padY
-            elif c == ord('u'):
-                return 'u',padY
-            elif c == ord('?') or c == curses.KEY_F1:
-                return '?',padY
+
+            elif c in moveDownKeys:
+                if padY <= len(content) - curses.LINES + 2:
+                    padY += 1;
+            
+            elif c in returnKeys:
+                return c, padY
+
             elif c == curses.KEY_RESIZE: #terminal resized
                 self.resizeWindow()
                 return '0',padY
+
             pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
                 
     def getDimensions(self):
