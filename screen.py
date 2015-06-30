@@ -70,7 +70,7 @@ class screen(object):
             padY = selectedItem - (curses.LINES - 4) + 1
 
 
-        currAttr = curses.A_NORMAL
+        currentAttr = curses.A_NORMAL
         if boldItems != 0:
             if boldItems[selectedItem] == 0:
                 currentAttr = curses.A_BOLD
