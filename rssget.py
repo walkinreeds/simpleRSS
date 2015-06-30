@@ -6,8 +6,11 @@ import html2text
 class rss(object):
     def getFeed(self,url):
         d = feedparser.parse(url)
-        if d.version == '':
-            return -1,-1,-1
+        try:
+            if d.version == '':
+                return -1,-1,-1
+        except:
+            return -1,-1,-2
 
         articles = []
         for entry in d.entries:
