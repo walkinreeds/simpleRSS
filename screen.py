@@ -40,6 +40,8 @@ class screen(object):
         else:
             self.bottomMsg = bottomMsg
 
+        topMsg = self.fitContent(topMsg,curses.COLS)[0]
+        bottomMsg = self.fitContent(bottomMsg,curses.COLS)[0]
         if curses.has_colors():
             self.stdscr.addstr(0,0, topMsg+(" "*(curses.COLS - len(topMsg))), curses.color_pair(1));
             self.stdscr.addstr(curses.LINES-3,0, bottomMsg+(" "*(curses.COLS - len(bottomMsg))), curses.color_pair(1));
