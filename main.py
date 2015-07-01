@@ -43,7 +43,7 @@ class mainprogram(object):
                 for feed in urllist:
                     self.screen.setStatus('Updating: {0}'.format(feed))
                     self.updateFeed(feed)
-                self.updateFeed("Done")
+                self.screen.setStatus("Done updating")
             elif feedListKey == ord('a'): #mark feed as read
                 self.database.setFeedViewed(urllist[selectedFeed],1)
             elif feedListKey == ord('A'): #mark all read
