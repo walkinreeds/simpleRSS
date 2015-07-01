@@ -84,7 +84,7 @@ class mainprogram(object):
                         self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,o: Open in Browser");
                         self.database.setArticleViewed(articleUrl[selectedArticle])
                         while(1):
-                            showArticleKey, showArticlePadY = self.screen.showArticle(self.rssworker.htmlToText(articleContent[selectedArticle],self.screen.getDimensions()[1]), showArticlePadY, moveUpKeys, moveDownKeys,[ord('q'), ord('h'), ord('l'), ord('o'), ord('u'), ord('?')])
+                            showArticleKey, showArticlePadY = self.screen.showArticle(self.rssworker.htmlToText(articleContent[selectedArticle]), showArticlePadY, moveUpKeys, moveDownKeys,[ord('q'), ord('h'), ord('l'), ord('o'), ord('u'), ord('?')])
                             if showArticleKey == ord('q') or showArticleKey == ord('h'):
                                 break;
                             elif showArticleKey == ord('o') or showArticleKey == ord('l'):
@@ -125,7 +125,8 @@ class mainprogram(object):
         """
         feedName, articles, version = self.rssworker.getFeed(feedurl)
         if (feedName == -1 and articles == -1):
-            return #invalid feed
+            self.screen.setStatus("Failed to get feed: "+feedurl)
+            return -1 #invalid feed
         self.database.addFeed(feedurl, feedName) #add or update feed name
         #insert feeds into the database
         try:
@@ -140,7 +141,7 @@ class mainprogram(object):
                 self.database.addArticle(feedurl,article[0],article[1],article[2],pubDate)
         except Exception as e:
             self.screen.close()
-        return
+        return 0
 
     def openInBrowser(self,url):
         #check browser configs
@@ -236,7 +237,7 @@ class mainprogram(object):
                          <li>o          - Open this article in browser</li>
                          <li>u          - Mark this article as unread</li>
                          </ul>"""
-        showArticleKey, showArticlePadY = self.screen.showArticle(self.rssworker.htmlToText(helpContent,self.screen.getDimensions()[1]),returnKeys=[ord('q')])
+        showArticleKey, showArticlePadY = self.screen.showArticle(self.rssworker.htmlToText(helpContent),returnKeys=[ord('q')])
         return
 #
 prog = mainprogram()

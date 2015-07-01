@@ -129,13 +129,31 @@ class screen(object):
         self.showInterface()
         return
 
+    def fitContent(self,content,cols):
+        content = ''.join(content) #convert to string
+        resultContent = []
+        line = ""
+
+        for i in range(0,len(content)):
+           line = line + content[i]
+           if len(line) == cols or content[i] == "\n" or (content[i] == " " and len(line) > cols - 5):
+               resultContent.append(line)
+               line = "";
+
+        if len(line)>0:
+            resultContent.append(line)
+        return resultContent
+
     def showArticle(self, content, padY = 0, moveUpKeys = [curses.KEY_UP,ord('k')], moveDownKeys = [curses.KEY_DOWN,ord('j')], returnKeys = []):
-        #split content in lines
-        content = content.split('\n')
+        content = self.fitContent(content, curses.COLS - 1)
         pad = curses.newpad(len(content)+1,curses.COLS)
         pad.keypad(1)
         for i in range(0,len(content)):
-            pad.addstr(i,0,content[i])
+            try:
+                pad.addstr(i,0,content[i])
+            except Exception as e:
+                pad.addstr(i,0,'***ERROR PARSING***\n')
+
         #fill blank lines to overwrite old content
         if(len(content) < curses.LINES - 3):
             for z in range(len(content) + 1, curses.LINES-3):
