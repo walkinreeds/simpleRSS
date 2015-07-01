@@ -18,8 +18,8 @@ class mainprogram(object):
 
         moveUpKeys = [KEY_UP,ord('k')]
         moveDownKeys = [KEY_DOWN,ord('j')]
-        listReturnKeys = [ord('q'), ord('h'), ord('r'), ord('R'), ord('a'), ord('A'), ord('u'), ord('U'), 10, ord('l'), ord('?')]
-
+        feedListReturnKeys = [ord('q'), ord('h'), ord('r'), ord('R'), ord('a'), ord('A'), ord('u'), ord('U'), 10, ord('l'), ord('?')]
+        articleListReturnKeys = feedListReturnKeys + [ord('o')]
         #mainloop
         feedPadY = 0
         selectedFeed = 0;
@@ -32,7 +32,7 @@ class mainprogram(object):
                     viewList.append(0)
                 else:
                     viewList.append(1)
-            feedListKey,feedPadY,selectedFeed = self.screen.showList(namelist, feedPadY, selectedFeed, viewList, moveUpKeys, moveDownKeys, listReturnKeys)
+            feedListKey,feedPadY,selectedFeed = self.screen.showList(namelist, feedPadY, selectedFeed, viewList, moveUpKeys, moveDownKeys, feedListReturnKeys)
 
             if feedListKey == ord('q') or feedListKey == ord('h'): #exit app
                 self.screen.close()
@@ -61,7 +61,7 @@ class mainprogram(object):
                 while(1):
                     self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
                     articleList,articleContent,articleViewed,articleUrl = self.getArticleList(urllist[selectedFeed])
-                    articleListKey, articlePadY, selectedArticle = self.screen.showList(articleList, articlePadY, selectedArticle, articleViewed, moveUpKeys, moveDownKeys, listReturnKeys)
+                    articleListKey, articlePadY, selectedArticle = self.screen.showList(articleList, articlePadY, selectedArticle, articleViewed, moveUpKeys, moveDownKeys, articleListReturnKeys)
                     if articleListKey == ord('q') or articleListKey == ord('h'):
                         break;
                     elif articleListKey == ord('r'): #pressed r / update this feed
