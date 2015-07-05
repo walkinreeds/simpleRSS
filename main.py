@@ -196,7 +196,7 @@ class mainprogram(object):
         
     def getConfigPath(self):
         homefolder = os.path.expanduser('~')
-        configfolder = os.path.join(homefolder, '.cursesrss')
+        configfolder = os.path.join(homefolder, '.simplerss')
         if (os.path.exists(configfolder) == False):
             os.mkdir(configfolder)
         return configfolder
