@@ -30,6 +30,20 @@ Tasks for 0.1 release:
 - [ ] Choose colors in config file
 - [x] Open Help in ? key
 
+###Configuration
+Configuration files are stored in ~/.simplerss/ directory, all files are created the first time you run the program.
+
+You can add feeds simply adding urls to .simplerss/urls, example:
+```
+http://strangequark.tk/index.php/feed
+http://distrowatch.com/news/dw.xml
+https://www.archlinux.org/feed/news
+http://www.reddit.com/r/archlinux/.rss
+```
+By default simpleRSS will open links with xdg-open, if you want to use other browser you can set it on .simplerss/config, example:
+```
+browser = firefox
+```
 
 ###Keys
 ####Feed List
