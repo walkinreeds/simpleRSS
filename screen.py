@@ -150,11 +150,30 @@ class screen(object):
         content = self.fitContent(content, curses.COLS - 1)
         pad = curses.newpad(len(content)+1,curses.COLS)
         pad.keypad(1)
-        for i in range(0,len(content)):
-            try:
-                pad.addstr(i,0,content[i])
-            except Exception as e:
-                pad.addstr(i,0,'***ERROR PARSING***\n')
+
+        boldStatus = False; #is bold attribute active?
+        prevChar = 0;
+        for y in range(0,len(content)):
+            posX = 0;
+            for x in range(0, len(content[y])):
+                try:
+                    #Bold - Text in bold are surrounded by **
+                    if (content[y][x] == "*"):
+                        if (prevChar == "*"):
+                            boldStatus = not boldStatus #toggle bold status
+                            if (boldStatus == True):
+                                pad.attron(curses.A_BOLD);
+                            else:
+                                pad.attroff(curses.A_BOLD);
+                            posX = posX - 1; #go one position back to delete the **
+                            continue;
+                    #End Bold
+
+                    prevChar = content[y][x]
+                    pad.addch(y,posX,content[y][x])
+                    posX += 1
+                except Exception as e:
+                    pad.addstr(y,x,'-')
 
         #fill blank lines to overwrite old content
         if(len(content) < curses.LINES - 3):
