@@ -151,8 +151,8 @@ class screen(object):
         pad = curses.newpad(len(content)+1,curses.COLS)
         pad.keypad(1)
 
-        boldStatus = False; #is bold attribute active?
-        prevChar = 0;
+        boldStatus = False #is bold attribute active?
+        prevChar = 0
         for y in range(0,len(content)):
             posX = 0;
             for x in range(0, len(content[y])):
