@@ -15,6 +15,7 @@ class mainprogram(object):
         self.database = database(os.path.join(self.getConfigPath(),'database.db3'))
         self.screen = screen()
         self.rssworker = rss()
+        self.screen.setWindowTitle("SimpleRSS");
 
         moveUpKeys = [KEY_UP,ord('k')]
         moveDownKeys = [KEY_DOWN,ord('j')]

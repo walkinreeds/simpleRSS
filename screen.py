@@ -1,4 +1,5 @@
 import curses, traceback
+import sys, os
 
 class screen(object):
     def __init__(self):
@@ -215,4 +216,10 @@ class screen(object):
         self.stdscr.addstr(curses.LINES-2,0, ' '*curses.COLS)
         self.stdscr.addstr(curses.LINES-2,0, str(message));
         self.stdscr.refresh()
+        return
+
+    def setWindowTitle(self, title):
+        compatibleTerminals = ['xterm', 'rxvt-unicode-256color', 'rxvt-unicode']
+        if os.getenv("TERM") in compatibleTerminals:
+            print("\x1B]0;%s\x07" % title) 
         return
