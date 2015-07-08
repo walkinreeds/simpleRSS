@@ -42,7 +42,13 @@ class rss(object):
         parser.images_with_size = showImgTags
         #parser.images_to_alt = not(showImgTags)
         parser.inline_links = False
-        return parser.handle(content)
+        markdown = parser.handle(content)
+
+        #remove some chars
+        markdown = markdown.replace('&lt;','<')
+        markdown = markdown.replace('&gt;','>')
+        markdown = markdown.replace(' \- ', ' - ') #dont know why html2text does this
+        return markdown
 
 if __name__ == '__main__':
     import sys
