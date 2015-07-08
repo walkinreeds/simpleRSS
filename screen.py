@@ -45,10 +45,10 @@ class screen(object):
         bottomMsg = self.fitContent(bottomMsg,curses.COLS)[0]
         if curses.has_colors():
             self.stdscr.addstr(0,0, topMsg+(" "*(curses.COLS - len(topMsg))), curses.color_pair(1));
-            self.stdscr.addstr(curses.LINES-3,0, bottomMsg+(" "*(curses.COLS - len(bottomMsg))), curses.color_pair(1));
+            self.stdscr.addstr(curses.LINES-2,0, bottomMsg+(" "*(curses.COLS - len(bottomMsg))), curses.color_pair(1));
         else:
             self.stdscr.addstr(0,0, topMsg+(" "*(curses.COLS - len(topMsg))) );
-            self.stdscr.addstr(curses.LINES-3,0, bottomMsg+(" "*(curses.COLS - len(bottomMsg))) );
+            self.stdscr.addstr(curses.LINES-2,0, bottomMsg+(" "*(curses.COLS - len(bottomMsg))) );
         self.stdscr.refresh()
         return
 
@@ -64,13 +64,13 @@ class screen(object):
                     pad.chgat(i,0,-1,curses.A_BOLD)
 
         #fill blank lines to overwrite old content
-        if(nrItems < curses.LINES - 3):
-            for z in range(nrItems + 1, curses.LINES-3):
+        if(nrItems < curses.LINES - 2):
+            for z in range(nrItems + 1, curses.LINES-2):
                 self.stdscr.addstr(z, 0, " "*curses.COLS);
         
         #fix, select current item when redraw window
-        if (selectedItem >= curses.LINES - 4):
-            padY = selectedItem - (curses.LINES - 4) + 1
+        if (selectedItem >= curses.LINES - 3):
+            padY = selectedItem - (curses.LINES - 3) + 1
 
 
         currentAttr = curses.A_NORMAL
@@ -80,7 +80,7 @@ class screen(object):
         pad.chgat(selectedItem,0,-1,curses.A_REVERSE | currentAttr);
 
         self.stdscr.refresh()
-        pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
+        pad.refresh(padY,0,1,0,curses.LINES-3,curses.COLS)
         while (1):
             c = pad.getch()
             
@@ -97,8 +97,8 @@ class screen(object):
                     selectedItem+=1
                     pad.chgat(selectedItem,0,-1,curses.A_REVERSE | currentAttr);
                     #scroll down when we reach the end of the page
-                    if (selectedItem >= curses.LINES - 4):
-                        padY = selectedItem - (curses.LINES - 4) + 1
+                    if (selectedItem >= curses.LINES - 3):
+                        padY = selectedItem - (curses.LINES - 3) + 1
 
             elif c in keysMoveUp:#moveUp
                 if (selectedItem > 0):
@@ -123,7 +123,7 @@ class screen(object):
                 self.resizeWindow()
                 return '0',padY,selectedItem
  
-            pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
+            pad.refresh(padY,0,1,0,curses.LINES-3,curses.COLS)
 
     def resizeWindow(self):
         y, x = self.stdscr.getmaxyx()
@@ -184,11 +184,11 @@ class screen(object):
         #fix when window get resized
         if padY >= len(content) - curses.LINES + 2:
             padY = len(content) - curses.LINES + 2
-        if len(content) <= curses.LINES - 4: #if the content fits the window show from the beggining
+        if len(content) <= curses.LINES - 3: #if the content fits the window show from the beggining
             padY = 0
         #end fix
 
-        pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
+        pad.refresh(padY,0,1,0,curses.LINES-3,curses.COLS)
         self.stdscr.refresh()
         while(1):
             c = pad.getch()
@@ -207,14 +207,14 @@ class screen(object):
                 self.resizeWindow()
                 return '0',padY
 
-            pad.refresh(padY,0,1,0,curses.LINES-4,curses.COLS)
+            pad.refresh(padY,0,1,0,curses.LINES-3,curses.COLS)
                 
     def getDimensions(self):
         return curses.LINES, curses.COLS
 
     def setStatus(self, message):
-        self.stdscr.addstr(curses.LINES-2,0, ' '*curses.COLS)
-        self.stdscr.addstr(curses.LINES-2,0, str(message));
+        self.stdscr.insstr(curses.LINES-1,0, ' '*curses.COLS)
+        self.stdscr.insstr(curses.LINES-1,0, str(message));
         self.stdscr.refresh()
         return
 
