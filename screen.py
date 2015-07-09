@@ -178,7 +178,7 @@ class screen(object):
 
         #fill blank lines to overwrite old content
         if(len(content) < curses.LINES - 3):
-            for z in range(len(content) + 1, curses.LINES-3):
+            for z in range(len(content) + 1, curses.LINES-2):
                 self.stdscr.addstr(z, 0, " "*curses.COLS);
 
         #fix when window get resized
