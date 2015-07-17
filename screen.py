@@ -1,14 +1,29 @@
 import curses, traceback
 import sys, os
 
+PAIR_TOPBAR = 1
+PAIR_BOTTOMBAR = 2
+PAIR_NORMAL_UNSELECTED = 3
+PAIR_NORMAL_SELECTED = 5
+PAIR_UNREAD_UNSELECTED = 4
+PAIR_UNREAD_SELECTED = 6
+
 class screen(object):
-    def __init__(self):
+    def __init__(self, colors = None):
+        self.stdscr = None
         try:
             #initialize curses
             self.stdscr = curses.initscr()
             curses.start_color()
             if curses.has_colors():
-                curses.init_pair(1,0,7)
+                if (colors == None):
+                    #index - foreground - background
+                    curses.init_pair(PAIR_TOPBAR,0,7) #top_bar
+                    curses.init_pair(PAIR_BOTTOMBAR,0,7) #bottom_bar
+                    curses.init_pair(PAIR_NORMAL_UNSELECTED,7,0) #normal_unselected
+                    curses.init_pair(PAIR_UNREAD_UNSELECTED,1,0) #unread_unselected
+                    curses.init_pair(PAIR_NORMAL_SELECTED,0,7) #normal_selected
+                    curses.init_pair(PAIR_UNREAD_SELECTED,1,7) #unread_selected
             curses.noecho()
             curses.cbreak()
             curses.curs_set(0)
@@ -16,16 +31,16 @@ class screen(object):
             #these need to go global because we will handle window resize in this module
             self.topMsg = ""
             self.bottomMsg = ""
-        except:
+        except Exception as e:
             #error ocurred, restore terminal
-            self.stdscr.keypad(0)
-            curses.echo()
-            curses.nocbreak()
-            curses.endwin()
+            self.close()
+            print(e)
             traceback.print_exc() #print the exception
+        return
 
     def close(self):
-        self.stdscr.keypad(0)
+        if (self.stdscr != None):
+            self.stdscr.keypad(0)
         curses.echo()
         curses.nocbreak()
         curses.endwin()
@@ -44,24 +59,24 @@ class screen(object):
         topMsg = self.fitContent(topMsg,curses.COLS)[0]
         bottomMsg = self.fitContent(bottomMsg,curses.COLS)[0]
         if curses.has_colors():
-            self.stdscr.addstr(0,0, topMsg+(" "*(curses.COLS - len(topMsg))), curses.color_pair(1));
-            self.stdscr.addstr(curses.LINES-2,0, bottomMsg+(" "*(curses.COLS - len(bottomMsg))), curses.color_pair(1));
+            self.stdscr.addstr(0,0, topMsg+(" "*(curses.COLS - len(topMsg))), curses.color_pair(PAIR_TOPBAR));
+            self.stdscr.addstr(curses.LINES-2,0, bottomMsg+(" "*(curses.COLS - len(bottomMsg))), curses.color_pair(PAIR_BOTTOMBAR));
         else:
             self.stdscr.addstr(0,0, topMsg+(" "*(curses.COLS - len(topMsg))) );
             self.stdscr.addstr(curses.LINES-2,0, bottomMsg+(" "*(curses.COLS - len(bottomMsg))) );
         self.stdscr.refresh()
         return
 
-    def showList(self, items = [], padY = 0, selectedItem = 0, boldItems = [], keysMoveUp = [curses.KEY_UP, ord('k')], keysMoveDown = [curses.KEY_DOWN, ord('j')], returnKeys = []):
+    def showList(self, items = [], padY = 0, selectedItem = 0, readItems = [], keysMoveUp = [curses.KEY_UP, ord('k')], keysMoveDown = [curses.KEY_DOWN, ord('j')], returnKeys = []):
         nrItems = len(items);
         #feed list
         pad = curses.newpad(nrItems+1,curses.COLS)
         pad.keypad(1)
         for i in range(0,nrItems):
-            pad.addstr(i, 0, " {0}{1}".format(items[i], " "*(curses.COLS - len(items[i]))))
-            if (len(boldItems) == nrItems) and (nrItems > 0):
-                if boldItems[i] == 0:
-                    pad.chgat(i,0,-1,curses.A_BOLD)
+            pad.addstr(i, 0, " {0}{1}".format(items[i], " "*(curses.COLS - len(items[i]))),curses.color_pair(PAIR_NORMAL_UNSELECTED))
+            if (len(readItems) == nrItems) and (nrItems > 0):
+                if readItems[i] == 0:
+                    pad.chgat(i,0,-1,curses.A_BOLD | curses.color_pair(PAIR_UNREAD_UNSELECTED))
 
         #fill blank lines to overwrite old content
         if(nrItems < curses.LINES - 2):
@@ -74,10 +89,18 @@ class screen(object):
 
 
         currentAttr = curses.A_NORMAL
-        if (len(boldItems) == nrItems) and (nrItems > 0):
-            if boldItems[selectedItem] == 0:
+        if (len(readItems) == nrItems) and (nrItems > 0):
+            if readItems[selectedItem] == 0:
                 currentAttr = curses.A_BOLD
-        pad.chgat(selectedItem,0,-1,curses.A_REVERSE | currentAttr);
+
+        #selected item - 0
+        if (curses.has_colors()):
+            if (currentAttr == curses.A_BOLD): #is unread
+                pad.chgat(selectedItem,0,-1, currentAttr | curses.color_pair(PAIR_UNREAD_SELECTED));
+            else:
+                pad.chgat(selectedItem,0,-1, currentAttr | curses.color_pair(PAIR_NORMAL_SELECTED));
+        else:
+            pad.chgat(selectedItem,0,-1,curses.A_REVERSE | currentAttr);
 
         self.stdscr.refresh()
         pad.refresh(padY,0,1,0,curses.LINES-3,curses.COLS)
@@ -87,15 +110,23 @@ class screen(object):
             if c in keysMoveDown: #moveDown
                 if (selectedItem < nrItems-1):
                     lastAttr = curses.A_NORMAL
+                    lastColor = curses.color_pair(PAIR_NORMAL_UNSELECTED);
                     currentAttr = curses.A_NORMAL
-                    if (len(boldItems) == nrItems) and (nrItems > 0):
-                        if boldItems[selectedItem] == 0:
+                    currentColor = curses.color_pair(PAIR_NORMAL_SELECTED);
+                    if (len(readItems) == nrItems) and (nrItems > 0):
+                        if readItems[selectedItem] == 0:
                             lastAttr = curses.A_BOLD
-                        if boldItems[selectedItem + 1] == 0:
+                            lastColor = curses.color_pair(PAIR_UNREAD_UNSELECTED) 
+                        if readItems[selectedItem + 1] == 0:
                             currentAttr = curses.A_BOLD
-                    pad.chgat(selectedItem,0,-1,lastAttr)
+                            currentColor = curses.color_pair(PAIR_UNREAD_SELECTED)
+                    if (curses.has_colors()):
+                        pad.chgat(selectedItem+1,0,-1, currentAttr | currentColor);
+                        pad.chgat(selectedItem,0,-1, lastAttr | lastColor)
+                    else:
+                        pad.chgat(selectedItem,0,-1,lastAttr)
+                        pad.chgat(selectedItem+1,0,-1,curses.A_REVERSE | currentAttr);
                     selectedItem+=1
-                    pad.chgat(selectedItem,0,-1,curses.A_REVERSE | currentAttr);
                     #scroll down when we reach the end of the page
                     if (selectedItem >= curses.LINES - 3):
                         padY = selectedItem - (curses.LINES - 3) + 1
@@ -103,15 +134,23 @@ class screen(object):
             elif c in keysMoveUp:#moveUp
                 if (selectedItem > 0):
                     lastAttr = curses.A_NORMAL
+                    lastColor = curses.color_pair(PAIR_NORMAL_UNSELECTED);
                     currentAttr = curses.A_NORMAL
-                    if boldItems != 0:
-                        if boldItems[selectedItem] == 0:
+                    currentColor = curses.color_pair(PAIR_NORMAL_SELECTED);
+                    if readItems != 0:
+                        if readItems[selectedItem] == 0:
                             lastAttr = curses.A_BOLD
-                        if boldItems[selectedItem - 1] == 0:
+                            lastColor = curses.color_pair(PAIR_UNREAD_UNSELECTED) 
+                        if readItems[selectedItem - 1] == 0:
                             currentAttr = curses.A_BOLD
-                    pad.chgat(selectedItem,0,-1,lastAttr)
+                            currentColor = curses.color_pair(PAIR_UNREAD_SELECTED)
+                    if (curses.has_colors()):
+                        pad.chgat(selectedItem-1,0,-1, currentAttr | currentColor);
+                        pad.chgat(selectedItem,0,-1, lastAttr | lastColor)
+                    else:
+                        pad.chgat(selectedItem,0,-1,lastAttr)
+                        pad.chgat(selectedItem-1,0,-1,curses.A_REVERSE | currentAttr);
                     selectedItem-=1;
-                    pad.chgat(selectedItem,0,-1,curses.A_REVERSE | currentAttr);
                     #scroll up when we want a item that isnt showing
                     if (selectedItem < padY):
                         padY -= 1
