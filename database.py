@@ -22,6 +22,11 @@ class database(object):
                 viewed      integer,
                 FOREIGN KEY (feed) REFERENCES feeds(urlhash)
             )''')
+            c.execute('''CREATE TABLE simplerss(
+                name    text primary key,
+                value   text
+            )''');
+            c.execute("INSERT INTO simplerss VALUES (?,?)",('version','0.1'));
             self.conn.commit()
 
     def getFeedInfo(self,url):
