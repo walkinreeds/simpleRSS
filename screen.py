@@ -52,14 +52,14 @@ class screen(object):
         self.stdscr.refresh()
         return
 
-    def showList(self, items, padY = 0, selectedItem = 0, boldItems = 0, keysMoveUp = [curses.KEY_UP, ord('k')], keysMoveDown = [curses.KEY_DOWN, ord('j')], returnKeys = []):
+    def showList(self, items = [], padY = 0, selectedItem = 0, boldItems = [], keysMoveUp = [curses.KEY_UP, ord('k')], keysMoveDown = [curses.KEY_DOWN, ord('j')], returnKeys = []):
         nrItems = len(items);
         #feed list
         pad = curses.newpad(nrItems+1,curses.COLS)
         pad.keypad(1)
         for i in range(0,nrItems):
             pad.addstr(i, 0, " {0}{1}".format(items[i], " "*(curses.COLS - len(items[i]))))
-            if boldItems != 0:
+            if (len(boldItems) == nrItems) and (nrItems > 0):
                 if boldItems[i] == 0:
                     pad.chgat(i,0,-1,curses.A_BOLD)
 
@@ -74,7 +74,7 @@ class screen(object):
 
 
         currentAttr = curses.A_NORMAL
-        if boldItems != 0:
+        if (len(boldItems) == nrItems) and (nrItems > 0):
             if boldItems[selectedItem] == 0:
                 currentAttr = curses.A_BOLD
         pad.chgat(selectedItem,0,-1,curses.A_REVERSE | currentAttr);
@@ -88,7 +88,7 @@ class screen(object):
                 if (selectedItem < nrItems-1):
                     lastAttr = curses.A_NORMAL
                     currentAttr = curses.A_NORMAL
-                    if boldItems != 0:
+                    if (len(boldItems) == nrItems) and (nrItems > 0):
                         if boldItems[selectedItem] == 0:
                             lastAttr = curses.A_BOLD
                         if boldItems[selectedItem + 1] == 0:
