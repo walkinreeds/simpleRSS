@@ -63,6 +63,8 @@ class screen(object):
 
     def showList(self, items = [], padY = 0, selectedItem = 0, readItems = [], keysMoveUp = [curses.KEY_UP, ord('k')], keysMoveDown = [curses.KEY_DOWN, ord('j')], returnKeys = []):
         nrItems = len(items);
+        if nrItems == 0:
+            return -1, -1, -1
         #feed list
         pad = curses.newpad(nrItems + 1,curses.COLS)
         pad.keypad(1)

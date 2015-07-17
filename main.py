@@ -77,8 +77,13 @@ class mainprogram(object):
                 selectedArticle = 0
                 articlePadY = 0
                 while(1):
-                    self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
                     articleList,articleContent,articleViewed,articleUrl = self.getArticleList(urllist[selectedFeed])
+
+                    #get out if there's no articles
+                    if (len(articleList) == 0):
+                        break;
+
+                    self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
                     articleListKey, articlePadY, selectedArticle = self.screen.showList(articleList, articlePadY, selectedArticle, articleViewed, moveUpKeys, moveDownKeys, articleListReturnKeys)
                     if articleListKey == ord('q') or articleListKey == ord('h'):
                         break;
