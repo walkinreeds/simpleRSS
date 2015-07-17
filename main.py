@@ -2,6 +2,7 @@ from screen import screen
 from rssget import rss
 from database import database
 import os
+import traceback
 
 KEY_UP = 259
 KEY_DOWN = 258
@@ -11,7 +12,7 @@ KEY_LEFT = 260
 class mainprogram(object):
     def __init__(self):
         #intantiate classes
-        self.config, urlsfile = self.getConfigs()
+        self.config = self.getConfigs()
         self.database = database(os.path.join(self.getConfigPath(),'database.db3'))
         self.screen = screen()
         self.rssworker = rss()
@@ -21,12 +22,27 @@ class mainprogram(object):
         moveDownKeys = [KEY_DOWN,ord('j')]
         feedListReturnKeys = [ord('q'), ord('h'), ord('r'), ord('R'), ord('a'), ord('A'), ord('u'), ord('U'), 10, ord('l'), ord('?')]
         articleListReturnKeys = feedListReturnKeys + [ord('o')]
+
+        try:
+            self.mainloop(moveUpKeys, moveDownKeys, feedListReturnKeys, articleListReturnKeys)
+        except Exception as e:
+            self.screen.close()
+            print("simpleRSS crashed:")
+            traceback.print_exc()
+        return
+
+    def mainloop(self, moveUpKeys, moveDownKeys, feedListReturnKeys, articleListReturnKeys):
         #mainloop
         feedPadY = 0
         selectedFeed = 0;
         while(1):
+            urllist, namelist,totallist,unreadlist = self.getFeedList() #get urls
+            if (len(urllist) == 0):
+                self.screen.close()
+                print("You need to add feeds to your {0} file.".format(os.path.join(self.getConfigPath(), 'urls')))
+                return
+
             self.screen.showInterface(" simpleRSS v0.1 Alpha", " q:Quit,ENTER:Open,r:Reload,R:Reload All,a:Mark Feed Read,A:Mark All Read");
-            urllist, namelist,totallist,unreadlist = self.getFeedList(urlsfile) #get urls
             viewList = []
             for number in unreadlist:
                 if number > 0:
@@ -94,7 +110,6 @@ class mainprogram(object):
                                 self.database.setArticleViewed(articleUrl[selectedArticle],0)
                             elif showArticleKey == ord('?'): #help
                                 self.showHelp() 
-        return
 
 
     def getArticleList(self, feedurl):
@@ -153,10 +168,11 @@ class mainprogram(object):
         os.system(browser+' '+url+ " > /dev/null 2>&1")
         return
 
-    def getFeedList(self,urlFile):
+    def getFeedList(self):
+        urlFile = os.path.join(self.getConfigPath(), 'urls');
         if (os.path.exists(urlFile) == False): #create the file if it doesnt exist
             f = open(urlFile,'w')
-            f.write("")
+            f.write("http://strangequark.tk/index.php/feed")
             f.close()
 
         f = open(urlFile, 'r')
@@ -191,9 +207,7 @@ class mainprogram(object):
                 config[1] = config[1].strip()
                 configs[config[0]] = config[1]
         f.close()
-
-        urlFilePath = os.path.join(self.getConfigPath(),'urls')
-        return configs,urlFilePath
+        return configs
         
     def getConfigPath(self):
         homefolder = os.path.expanduser('~')
