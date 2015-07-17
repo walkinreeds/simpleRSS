@@ -6,16 +6,16 @@ My goal is to make something like newsbeuter but with image support and maybe ca
 
 ###Screenshots:
 
-![Feed List](http://i.imgur.com/tAOYBzJ.png)
-![Article List](http://i.imgur.com/nYcQldL.png)
-![Article](http://i.imgur.com/S9ivkCW.png)
+![Feed List](http://i.imgur.com/nIEsOGU.png)
+![Article List](http://i.imgur.com/rW57uDK.png)
+![Article](http://i.imgur.com/OavqQWH.png)
 
 Dependencies (Python modules):
   * feedparser
   * html2text
 
 
-**This app is not ready to use yet, it's not finished and contains bugs.**
+**Almost ready for first release, may contain bugs.**
 
 Tasks for 0.1 release:
 - [x] Get and parse feeds
