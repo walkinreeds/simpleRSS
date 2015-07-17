@@ -43,6 +43,18 @@ By default simpleRSS will open links with xdg-open, if you want to use other bro
 ```
 browser = firefox
 ```
+You can also use .simplerss/config to change the colors:
+```
+# Screen Colors
+# 0 - Black; 1 - Red; 2 - Green; 3 - Yellow; 4 - Blue;
+# 5 - Magenta; 6 - Cyan; 7 - White;
+color_topbar = 136,238
+color_bottombar = 136,238
+color_listitem = 244,0
+color_listitem_selected = 244,239
+color_listitem_unread = 136,0
+color_listitem_unread_selected = 136,239
+```
 
 ###Keys
 ####Feed List
