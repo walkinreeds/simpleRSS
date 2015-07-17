@@ -14,7 +14,7 @@ class mainprogram(object):
         #intantiate classes
         self.config = self.getConfigs()
         self.database = database(os.path.join(self.getConfigPath(),'database.db3'))
-        self.screen = screen()
+        self.screen = screen(self.config)
         self.rssworker = rss()
         
         self.screen.setWindowTitle("SimpleRSS");
@@ -197,13 +197,24 @@ class mainprogram(object):
         configFilePath = os.path.join(self.getConfigPath(),'config')
         if (os.path.exists(configFilePath) == False):
             f = open(configFilePath,'w')
-            f.write("")
+            f.write("""# simpleRSS config file 
+browser = xdg-open
+
+# Screen Colors
+# 0 - Black; 1 - Red; 2 - Green; 3 - Yellow; 4 - Blue;
+# 5 - Magenta; 6 - Cyan; 7 - White;
+color_topbar = 0,7
+color_bottombar = 0,7
+color_listitem = 7,0
+color_listitem_selected = 0,7
+color_listitem_unread = 1,0
+color_listitem_unread_selected = 1,7""")
             f.close()
         f = open(configFilePath,'r')
         fileLines = f.readlines()
         configs = {}
         for line in fileLines:
-            if '=' in line:
+            if '=' in line and line[0] != "#":
                 config = line.split('=')
                 config[0] = config[0].strip()
                 config[1] = config[1].strip()

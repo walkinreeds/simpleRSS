@@ -9,21 +9,14 @@ PAIR_UNREAD_UNSELECTED = 4
 PAIR_UNREAD_SELECTED = 6
 
 class screen(object):
-    def __init__(self, colors = None):
+    def __init__(self, config = None):
         self.stdscr = None
         try:
             #initialize curses
             self.stdscr = curses.initscr()
             curses.start_color()
             if curses.has_colors():
-                if (colors == None):
-                    #index - foreground - background
-                    curses.init_pair(PAIR_TOPBAR,0,7) #top_bar
-                    curses.init_pair(PAIR_BOTTOMBAR,0,7) #bottom_bar
-                    curses.init_pair(PAIR_NORMAL_UNSELECTED,7,0) #normal_unselected
-                    curses.init_pair(PAIR_UNREAD_UNSELECTED,1,0) #unread_unselected
-                    curses.init_pair(PAIR_NORMAL_SELECTED,0,7) #normal_selected
-                    curses.init_pair(PAIR_UNREAD_SELECTED,1,7) #unread_selected
+                self.processColors(config)
             curses.noecho()
             curses.cbreak()
             curses.curs_set(0)
@@ -61,6 +54,7 @@ class screen(object):
         if curses.has_colors():
             self.stdscr.addstr(0,0, topMsg+(" "*(curses.COLS - len(topMsg))), curses.color_pair(PAIR_TOPBAR));
             self.stdscr.addstr(curses.LINES-2,0, bottomMsg+(" "*(curses.COLS - len(bottomMsg))), curses.color_pair(PAIR_BOTTOMBAR));
+            self.setStatus(""); #make status bar match normal_unselected color
         else:
             self.stdscr.addstr(0,0, topMsg+(" "*(curses.COLS - len(topMsg))) );
             self.stdscr.addstr(curses.LINES-2,0, bottomMsg+(" "*(curses.COLS - len(bottomMsg))) );
@@ -70,18 +64,24 @@ class screen(object):
     def showList(self, items = [], padY = 0, selectedItem = 0, readItems = [], keysMoveUp = [curses.KEY_UP, ord('k')], keysMoveDown = [curses.KEY_DOWN, ord('j')], returnKeys = []):
         nrItems = len(items);
         #feed list
-        pad = curses.newpad(nrItems+1,curses.COLS)
+        pad = curses.newpad(nrItems + 1,curses.COLS)
         pad.keypad(1)
         for i in range(0,nrItems):
-            pad.addstr(i, 0, " {0}{1}".format(items[i], " "*(curses.COLS - len(items[i]))),curses.color_pair(PAIR_NORMAL_UNSELECTED))
+            fill = " "*(curses.COLS - len(items[i]))
+            pad.addstr(i, 0, " {0}{1}".format(items[i], fill),curses.color_pair(PAIR_NORMAL_UNSELECTED))
             if (len(readItems) == nrItems) and (nrItems > 0):
                 if readItems[i] == 0:
                     pad.chgat(i,0,-1,curses.A_BOLD | curses.color_pair(PAIR_UNREAD_UNSELECTED))
 
         #fill blank lines to overwrite old content
+        if curses.has_colors():
+            pad.chgat(nrItems, 0, -1, curses.color_pair(PAIR_NORMAL_UNSELECTED))
         if(nrItems < curses.LINES - 2):
-            for z in range(nrItems + 1, curses.LINES-2):
-                self.stdscr.addstr(z, 0, " "*curses.COLS);
+            for z in range(nrItems - 1, curses.LINES-2):
+                if curses.has_colors():
+                    self.stdscr.addstr(z, 0, " "*curses.COLS, curses.color_pair(PAIR_NORMAL_UNSELECTED))
+                else:
+                    self.stdscr.addstr(z, 0, " "*curses.COLS);
         
         #fix, select current item when redraw window
         if (selectedItem >= curses.LINES - 3):
@@ -214,16 +214,22 @@ class screen(object):
                     posX += 1
                 except Exception as e:
                     pad.addstr(y,x,'-')
+            #end line
+            if curses.has_colors():
+                pad.chgat(y,0,-1,curses.color_pair(PAIR_NORMAL_UNSELECTED))
 
         #fill blank lines to overwrite old content
         if(len(content) < curses.LINES - 3):
             for z in range(len(content) + 1, curses.LINES-2):
-                self.stdscr.addstr(z, 0, " "*curses.COLS);
+                if curses.has_colors():
+                    self.stdscr.addstr(z, 0, " "*curses.COLS, curses.color_pair(PAIR_NORMAL_UNSELECTED));
+                else:
+                    self.stdscr.addstr(z, 0, " "*curses.COLS);
 
         #fix when window get resized
         if padY >= len(content) - curses.LINES + 2:
             padY = len(content) - curses.LINES + 2
-        if len(content) <= curses.LINES - 3: #if the content fits the window show from the beggining
+        if len(content) <= curses.LINES - 3: #if the content fits the window goto top 
             padY = 0
         #end fix
 
@@ -252,8 +258,8 @@ class screen(object):
         return curses.LINES, curses.COLS
 
     def setStatus(self, message):
-        self.stdscr.insstr(curses.LINES-1,0, ' '*curses.COLS)
-        self.stdscr.insstr(curses.LINES-1,0, str(message));
+        self.stdscr.insstr(curses.LINES-1,0, ' '*curses.COLS, curses.color_pair(PAIR_NORMAL_UNSELECTED))
+        self.stdscr.insstr(curses.LINES-1,0, str(message), curses.color_pair(PAIR_NORMAL_UNSELECTED));
         self.stdscr.refresh()
         return
 
@@ -262,3 +268,43 @@ class screen(object):
         if os.getenv("TERM") in compatibleTerminals:
             print("\x1B]0;%s\x07" % title) 
         return
+
+    def processColors(self, colors):
+        if colors == None:
+            colors = {"":""}
+        #index - foreground - background
+        if "color_topbar" in colors.keys():
+            fg,bg = colors['color_topbar'].split(',');
+            curses.init_pair(PAIR_TOPBAR, int(fg), int(bg));
+        else:
+            curses.init_pair(PAIR_TOPBAR, 0, 7);
+
+        if "color_bottombar" in colors.keys():
+            fg,bg = colors['color_bottombar'].split(',');
+            curses.init_pair(PAIR_BOTTOMBAR, int(fg), int(bg));
+        else:
+            curses.init_pair(PAIR_BOTTOMBAR, 0, 7)
+
+        if "color_listitem" in colors.keys():
+            fg,bg = colors['color_listitem'].split(',');
+            curses.init_pair(PAIR_NORMAL_UNSELECTED, int(fg), int(bg));
+        else:
+            curses.init_pair(PAIR_NORMAL_UNSELECTED, 7, 0)
+
+        if "color_listitem_selected" in colors.keys():
+            fg,bg = colors['color_listitem_selected'].split(',');
+            curses.init_pair(PAIR_NORMAL_SELECTED, int(fg), int(bg));
+        else:
+            curses.init_pair(PAIR_NORMAL_SELECTED, 0, 7)
+
+        if "color_listitem_unread" in colors.keys():
+            fg,bg = colors['color_listitem_unread'].split(',');
+            curses.init_pair(PAIR_UNREAD_UNSELECTED, int(fg), int(bg));
+        else:
+            curses.init_pair(PAIR_UNREAD_UNSELECTED, 1, 0)
+
+        if "color_listitem_unread_selected" in colors.keys():
+            fg,bg = colors['color_listitem_unread_selected'].split(',');
+            curses.init_pair(PAIR_UNREAD_SELECTED, int(fg), int(bg));
+        else:
+            curses.init_pair(PAIR_UNREAD_SELECTED, 1, 7)
