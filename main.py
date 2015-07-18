@@ -43,7 +43,7 @@ class mainprogram(object):
                 print("You need to add feeds to your {0} file.".format(os.path.join(self.getConfigPath(), 'urls')))
                 return
             
-            self.screen.showInterface(" simpleRSS v0.1 Alpha", " q:Quit,ENTER:Open,r:Reload,R:Reload All,a:Mark Feed Read,A:Mark All Read");
+            self.screen.showInterface(" simpleRSS v0.2 Alpha", " q:Quit,ENTER:Open,r:Reload,R:Reload All,a:Mark Feed Read,A:Mark All Read");
             viewList = []
             for number in unreadlist:
                 if number > 0:
