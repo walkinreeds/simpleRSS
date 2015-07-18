@@ -4,7 +4,7 @@
 I know there are a lot of RSS readers out there, I recently decided to learn how to program with curses and also learn how to use git.
 My goal is to make something like newsbeuter but with image support and maybe categories.
 
-###Screenshots:
+###Screenshots (v0.1):
 
 ![Feed List](http://i.imgur.com/nIEsOGU.png)
 ![Article List](http://i.imgur.com/rW57uDK.png)
@@ -15,19 +15,14 @@ Dependencies (Python modules):
   * html2text
 
 
-**Almost ready for first release, may contain bugs.**
-
-Tasks for 0.1 release:
-- [x] Get and parse feeds
-- [x] Store feeds in the database
-- [x] Show List of Feeds, List of Articles and Articles
-- [x] Open Articles in Browser
-- [x] Config file (set default browser, other settings will be implemented as needed)
-- [x] Read/Unread articles
-- [x] Detect terminal resize
-- [x] Article Links in the end (like newsbeuter)
-- [x] Choose colors in config file
-- [x] Open Help in ? key
+**Tasks for 0.2 release:**
+- [ ] Organize feeds by categories
+  - [ ] Sort articles by Feed/Category
+- [ ] Favorites (display by feed/category)
+- [ ] Save articles to file
+  - [ ] txt (markdown)
+  - [ ] html
+- [ ] Display Images (this would be hard)
 
 ###Configuration
 Configuration files are stored in ~/.simplerss/ directory, all files are created the first time you run the program.
