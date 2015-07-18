@@ -11,13 +11,14 @@ KEY_LEFT = 260
 
 class mainprogram(object):
     def __init__(self):
+        self.title = "SimpleRSS Development Version"
         #intantiate classes
         self.config = self.getConfigs()
         self.database = database(os.path.join(self.getConfigPath(),'database.db3'))
         self.screen = screen(self.config)
         self.rssworker = rss()
         
-        self.screen.setWindowTitle("SimpleRSS Development Version");
+        self.screen.setWindowTitle(self.title);
         
         moveUpKeys = [KEY_UP,ord('k')]
         moveDownKeys = [KEY_DOWN,ord('j')]
@@ -43,7 +44,7 @@ class mainprogram(object):
                 print("You need to add feeds to your {0} file.".format(os.path.join(self.getConfigPath(), 'urls')))
                 return
             
-            self.screen.showInterface(" simpleRSS Development Version", " q:Quit,ENTER:Open,r:Reload,R:Reload All,a:Mark Feed Read,A:Mark All Read");
+            self.screen.showInterface(" {0}".format(self.title), " q:Quit,ENTER:Open,r:Reload,R:Reload All,a:Mark Feed Read,A:Mark All Read");
             viewList = []
             for number in unreadlist:
                 if number > 0:
@@ -83,7 +84,7 @@ class mainprogram(object):
                     if (len(articleList) == 0):
                         break;
 
-                    self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
+                    self.screen.showInterface(" {0} - {1}".format(self.title, namelist[selectedFeed].split("\t")[1]), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
                     articleListKey, articlePadY, selectedArticle = self.screen.showList(articleList, articlePadY, selectedArticle, articleViewed, moveUpKeys, moveDownKeys, articleListReturnKeys)
                     if articleListKey == ord('q') or articleListKey == ord('h'):
                         break;
@@ -104,7 +105,7 @@ class mainprogram(object):
                     elif articleListKey == 10 or articleListKey == ord('l'):
                         #open article
                         showArticlePadY = 0
-                        self.screen.showInterface(" simpleRSS v0.1 Alpha - {0}".format(namelist[selectedFeed].split("\t")[1]), " q:Back,o: Open in Browser");
+                        self.screen.showInterface(" {0} - {1}".format(self.title, namelist[selectedFeed].split("\t")[1]), " q:Back,o: Open in Browser");
                         self.database.setArticleViewed(articleUrl[selectedArticle])
                         while(1):
                             showArticleKey, showArticlePadY = self.screen.showArticle(self.rssworker.htmlToText(articleContent[selectedArticle]), showArticlePadY, moveUpKeys, moveDownKeys,[ord('q'), ord('h'), ord('l'), ord('o'), ord('u'), ord('?')])
@@ -235,7 +236,7 @@ color_listitem_unread_selected = 1,7""")
         return configfolder
 
     def showHelp(self):
-        self.screen.showInterface("simpleRSS - Help","q - Quit")
+        self.screen.showInterface("{0} - Help".format(self.title),"q - Quit")
         helpContent = """<h1>Keys</h1><h2>Feed List</h2><ul>
                          <li>j,Down Arrow - Select next item</li>
                          <li>k,Up Arrow     - Select previous item</li>
