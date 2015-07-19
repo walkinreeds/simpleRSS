@@ -26,13 +26,13 @@ class database(object):
                 name    text primary key,
                 value   text
             )''');
-            self.setValue('version',str(currentVersion);
+            self.setValue('version',str(currentVersion))
         else:
             version = self.getValue('version');
             if version != None:
                 version = float(version);
                 if version < currentVersion:
-                   self.databaseUpgrade(version) 
+                   self.databaseUpgrade(version)
 
 
     def databaseUpgrade(self, version):
@@ -42,7 +42,7 @@ class database(object):
         This function will be written if the database suffer changes in new releases.
         For now it's just a 'dummy'
         """
-        pass        
+        pass
 
     def getValue(self, name):
         """
@@ -74,7 +74,6 @@ class database(object):
         """
         Upgrades old databases to be compatible with most recent version
         """
-        
         return
 
     def getFeedInfo(self,url):
@@ -137,9 +136,4 @@ class database(object):
 
 
 if __name__ == '__main__':
-    databaseTest = database('/home/bruno/.simplerss/database.db3')
-    databaseTest.setValue('version','1.0')
-    #url = 'http://www.archlinux.org/feed/news/'
-    #databaseTest.addFeed(url,"Arch Linux")
-    #print(databaseTest.getFeedInfo(url))
-    
+    pass
