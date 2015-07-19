@@ -3,7 +3,7 @@ import hashlib
 import os
 
 class database(object):
-    def __init__(self,path):
+    def __init__(self,path,currentVersion):
         databaseExists = os.path.exists(path)
         self.conn = sqlite3.connect(path)
         if databaseExists == False:
@@ -26,8 +26,56 @@ class database(object):
                 name    text primary key,
                 value   text
             )''');
-            c.execute("INSERT INTO simplerss VALUES (?,?)",('version','0.1'));
-            self.conn.commit()
+            self.setValue('version',str(currentVersion);
+        else:
+            version = self.getValue('version');
+            if version != None:
+                version = float(version);
+                if version < currentVersion:
+                   self.databaseUpgrade(version) 
+
+
+    def databaseUpgrade(self, version):
+        """
+        Upgrade old database to be compatible with the current version.
+
+        This function will be written if the database suffer changes in new releases.
+        For now it's just a 'dummy'
+        """
+        pass        
+
+    def getValue(self, name):
+        """
+        Gets a value from simplerss table
+        """
+        c = self.conn.cursor()
+        c.execute("SELECT value FROM simplerss WHERE name = ?",(name,))
+        value = c.fetchone()
+        if (value == None):
+            return None
+        elif (len(value) > 0):
+            return value[0]
+        else:
+            return None
+
+    def setValue(self, name, value):
+        """
+        Creates/Sets a value in simplerss table
+        """
+        c = self.conn.cursor()
+        if (self.getValue(name) == None):
+            c.execute("INSERT INTO simplerss VALUES (?, ?)", (name, value));
+        else:
+            c.execute("UPDATE simplerss SET value = ? WHERE name = ?", (value,name));
+        self.conn.commit()
+        return
+
+    def upgradeDatabase(self, version):
+        """
+        Upgrades old databases to be compatible with most recent version
+        """
+        
+        return
 
     def getFeedInfo(self,url):
         c = self.conn.cursor()
@@ -86,8 +134,12 @@ class database(object):
         c = self.conn.cursor()
         c.execute("UPDATE articles SET viewed = ?", (viewed,))
         self.conn.commit()
-#
-#databaseTest = database('/home/bruno/.cursesrss/database.db3')
-#url = 'http://www.archlinux.org/feed/news/'
-#databaseTest.addFeed(url,"Arch Linux")
-#print(databaseTest.getFeedInfo(url))
+
+
+if __name__ == '__main__':
+    databaseTest = database('/home/bruno/.simplerss/database.db3')
+    databaseTest.setValue('version','1.0')
+    #url = 'http://www.archlinux.org/feed/news/'
+    #databaseTest.addFeed(url,"Arch Linux")
+    #print(databaseTest.getFeedInfo(url))
+    
