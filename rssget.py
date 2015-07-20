@@ -54,7 +54,6 @@ if __name__ == '__main__':
     import sys
     url = sys.argv[1]
     article = int(sys.argv[2])
-    width = int(sys.argv[3])
     prog = rss()
     title, content, version = rss.getFeed(prog,url)
     #print()
@@ -65,4 +64,4 @@ if __name__ == '__main__':
     #pubDate = content[0][3]
     #print("Date: {0}-{1}-{2} {3}:{4}".format(pubDate[0],pubDate[1],pubDate[2],pubDate[3],pubDate[4]))
     print("Content:")
-    print(prog.htmlToText(content[article][2], width))
+    print(prog.htmlToText(content[article][2]))

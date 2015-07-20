@@ -4,6 +4,7 @@ from database import database
 import os
 import traceback
 
+import time
 VERSION = 0.2
 
 KEY_UP = 259
@@ -60,7 +61,6 @@ class mainprogram(object):
                 self.updateFeed(urllist[selectedFeed])
             elif feedListKey == ord('R'): #pressed R / update all feeds
                 for feed in urllist:
-                    self.screen.setStatus('Updating: {0}'.format(feed))
                     self.updateFeed(feed)
                 self.screen.setStatus("Done updating")
             elif feedListKey == ord('a'): #mark feed as read
@@ -118,6 +118,15 @@ class mainprogram(object):
                             elif showArticleKey == ord('?'): #help
                                 self.showHelp()
 
+    def showArticleList(self, feed):
+        pass
+
+    def showFeedList(self, category, selectedItem, padY):
+        pass
+
+    def showCategoryList(self, selectedItem, padY):
+        pass
+
     def getArticleList(self, feedurl):
         feed = self.database.getArticles(feedurl)
         articleList = [];
@@ -145,11 +154,14 @@ class mainprogram(object):
         """
         Add articles to database
         """
+        self.screen.setStatus("Updating: "+feedurl)
         feedName, articles, version = self.rssworker.getFeed(feedurl)
+        error = 0;
         if (feedName == -1 and articles == -1):
             self.screen.setStatus("Failed to get feed: "+feedurl)
-            return -1 #invalid feed
-        self.database.addFeed(feedurl, feedName) #add or update feed name
+            error = 1
+
+        self.database.addFeed(feedurl, feedName, abs(error)) #add or update feed name
         #insert feeds into the database
         try:
             for article in articles:
@@ -162,7 +174,9 @@ class mainprogram(object):
                 pubDate = "{0},{1},{2},{3},{4}".format(year,month,day,hour,minute)
                 self.database.addArticle(feedurl,article[0],article[1],article[2],pubDate)
         except Exception as e:
-            self.screen.close()
+            self.screen.setStatus("Exception: {0}".format(e))
+            return 
+
         self.screen.setStatus("Updated: "+feedurl)
         return 0
 
@@ -196,12 +210,16 @@ class mainprogram(object):
                 feedNameList.append(url)
             else: #is a feed url
                 feedUrlList.append(url)
-                feedName,totalArticles,unreadArticles = self.database.getFeedInfo(url)
+                feedName,totalArticles,unreadArticles,error = self.database.getFeedInfo(url)
                 feedTotalList.append(totalArticles)
                 feedUnreadList.append(unreadArticles)
                 unreadArticles = str(unreadArticles)
                 totalArticles = str(totalArticles)
-                feedNameList.append("({0}/{1})\t{2}".format(unreadArticles.zfill(2),totalArticles.zfill(2),feedName))
+                if error == 1: 
+                    indicator = "E";
+                else:
+                    indicator = " "; 
+                feedNameList.append("{3} ({0}/{1})\t{2}".format(unreadArticles.zfill(2),totalArticles.zfill(2),feedName,indicator))
         f.close()
         return feedUrlList, feedNameList, feedTotalList, feedUnreadList
 

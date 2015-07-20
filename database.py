@@ -10,7 +10,8 @@ class database(object):
             c = self.conn.cursor()
             c.execute('''CREATE TABLE feeds(
                 urlhash text primary key,
-                name    text
+                name    text,
+                error   integer DEFAULT 0
             )''')
             c.execute('''CREATE TABLE articles(
                 articleid   integer primary key autoincrement,
@@ -38,11 +39,15 @@ class database(object):
     def databaseUpgrade(self, version):
         """
         Upgrade old database to be compatible with the current version.
-
-        This function will be written if the database suffer changes in new releases.
-        For now it's just a 'dummy'
         """
-        pass
+        c = self.conn.cursor()
+        if version <= 0.1:
+            c.execute("ALTER TABLE feeds ADD error integer DEFAULT 0")
+            c.execute("UPDATE feeds SET error=0;")
+
+        del c;
+        self.setValue('version',str(version))
+        return
 
     def getValue(self, name):
         """
@@ -70,31 +75,39 @@ class database(object):
         self.conn.commit()
         return
 
-    def upgradeDatabase(self, version):
-        """
-        Upgrades old databases to be compatible with most recent version
-        """
-        return
-
     def getFeedInfo(self,url):
         c = self.conn.cursor()
         md5url=hashlib.md5(url.encode('utf-8')).hexdigest()
-        c.execute("SELECT name FROM feeds WHERE urlhash = '{0}'".format(md5url))
+        c.execute("SELECT name,error FROM feeds WHERE urlhash = '{0}'".format(md5url))
         name = c.fetchone()
         if (name == None):
-            return url,0,0
+            return url,0,0,0
 
         c.execute("SELECT COUNT(*) FROM articles WHERE feed = ?",(md5url,))
         articlesTotal = int(c.fetchone()[0])
         c.execute("SELECT COUNT(*) FROM articles WHERE feed = ? AND viewed = 0",(md5url,))
         articlesNotRead = int(c.fetchone()[0])
-        return name[0],articlesTotal,articlesNotRead
+        return name[0],articlesTotal,articlesNotRead,name[1]
 
-    def addFeed(self,url,name):
+    def addFeed(self,url,name,error=0):
         try:
             c = self.conn.cursor()
             md5url=hashlib.md5(url.encode('utf-8')).hexdigest()
-            c.execute("INSERT INTO feeds VALUES(?,?)",(md5url,name,))
+            c.execute("SELECT name FROM feeds WHERE urlhash = ?",(md5url,))
+            feeds = c.fetchall()
+            if len(feeds) == 0 and error == 1:
+                #invalid feed not in database
+                return
+            elif len(feeds) == 0 and error == 0:
+                #valid new feed
+                c.execute("INSERT INTO feeds VALUES(?,?)",(md5url,name,))
+            elif len(feeds) > 0 and error == 0:
+                #existant feed no errors
+                c.execute("UPDATE feeds SET name = ?, error = ? WHERE urlhash = ?", (name, error, md5url))
+            elif len(feeds) > 0 and error == 1:
+                #existant feed, error
+                c.execute("UPDATE feeds SET error = ? WHERE urlhash = ?", (error, md5url))
+
             self.conn.commit()
         except sqlite3.IntegrityError as e:
             pass
@@ -136,4 +149,6 @@ class database(object):
 
 
 if __name__ == '__main__':
+    db = database('/home/bruno/.simplerss/database.db3',0.2)
+    db.databaseUpgrade(0.2)
     pass
