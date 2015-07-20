@@ -4,22 +4,23 @@ from database import database
 import os
 import traceback
 
+VERSION = 0.2
+
 KEY_UP = 259
 KEY_DOWN = 258
 KEY_RIGHT = 261
 KEY_LEFT = 260
-
 class mainprogram(object):
     def __init__(self):
-        self.title = "SimpleRSS Development Version"
-        #intantiate classes
+        self.title = "SimpleRSS {0} Development Version".format(VERSION)
+        #instantiate classes
         self.config = self.getConfigs()
-        self.database = database(os.path.join(self.getConfigPath(),'database.db3'))
+        self.database = database(os.path.join(self.getConfigPath(),'database.db3'), VERSION)
         self.screen = screen(self.config)
         self.rssworker = rss()
-        
+
         self.screen.setWindowTitle(self.title);
-        
+
         moveUpKeys = [KEY_UP,ord('k')]
         moveDownKeys = [KEY_DOWN,ord('j')]
         feedListReturnKeys = [ord('q'), ord('h'), ord('r'), ord('R'), ord('a'), ord('A'), ord('u'), ord('U'), 10, ord('l'), ord('?')]
@@ -36,23 +37,22 @@ class mainprogram(object):
     def mainloop(self, moveUpKeys, moveDownKeys, feedListReturnKeys, articleListReturnKeys):
         feedPadY = 0
         selectedFeed = 0;
-                #loop
+        #loop
         while(1):
             urllist, namelist,totallist,unreadlist = self.getFeedList() #get urls
             if (len(urllist) == 0):
                 self.screen.close()
                 print("You need to add feeds to your {0} file.".format(os.path.join(self.getConfigPath(), 'urls')))
                 return
-            
+
             self.screen.showInterface(" {0}".format(self.title), " q:Quit,ENTER:Open,r:Reload,R:Reload All,a:Mark Feed Read,A:Mark All Read");
             viewList = []
             for number in unreadlist:
-                if number > 0:
-                    viewList.append(0)
-                else:
-                    viewList.append(1)
-            feedListKey,feedPadY,selectedFeed = self.screen.showList(namelist, feedPadY, selectedFeed, viewList, moveUpKeys, moveDownKeys, feedListReturnKeys)
-            
+                if number > 0: viewList.append(0)
+                else: viewList.append(1)
+
+            feedListKey,feedPadY,selectedFeed = self.screen.showList(namelist, True, feedPadY, selectedFeed, viewList, moveUpKeys, moveDownKeys, feedListReturnKeys)
+
             if feedListKey == ord('q') or feedListKey == ord('h'): #exit app
                 self.screen.close()
                 break;
@@ -72,8 +72,8 @@ class mainprogram(object):
             elif feedListKey == ord('U'): #mark all NOT read
                 self.database.setAllViewed(0)
             elif feedListKey == ord('?'): #help
-                self.showHelp() 
-            elif feedListKey == 10 or feedListKey == ord('l'): 
+                self.showHelp()
+            elif feedListKey == 10 or feedListKey == ord('l'):
                 #open article list
                 selectedArticle = 0
                 articlePadY = 0
@@ -85,7 +85,7 @@ class mainprogram(object):
                         break;
 
                     self.screen.showInterface(" {0} - {1}".format(self.title, namelist[selectedFeed].split("\t")[1]), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
-                    articleListKey, articlePadY, selectedArticle = self.screen.showList(articleList, articlePadY, selectedArticle, articleViewed, moveUpKeys, moveDownKeys, articleListReturnKeys)
+                    articleListKey, articlePadY, selectedArticle = self.screen.showList(articleList, False, articlePadY, selectedArticle, articleViewed, moveUpKeys, moveDownKeys, articleListReturnKeys)
                     if articleListKey == ord('q') or articleListKey == ord('h'):
                         break;
                     elif articleListKey == ord('r'): #pressed r / update this feed
@@ -101,7 +101,7 @@ class mainprogram(object):
                     elif articleListKey == ord('o'): #open in browser
                         self.openInBrowser(articleUrl[selectedArticle])
                     elif articleListKey == ord('?'): #help
-                        self.showHelp() 
+                        self.showHelp()
                     elif articleListKey == 10 or articleListKey == ord('l'):
                         #open article
                         showArticlePadY = 0
@@ -116,8 +116,7 @@ class mainprogram(object):
                             elif showArticleKey == ord('u'): #mark article NOT read
                                 self.database.setArticleViewed(articleUrl[selectedArticle],0)
                             elif showArticleKey == ord('?'): #help
-                                self.showHelp() 
-            
+                                self.showHelp()
 
     def getArticleList(self, feedurl):
         feed = self.database.getArticles(feedurl)
@@ -189,21 +188,28 @@ class mainprogram(object):
         feedTotalList = []
         feedUnreadList = []
         for url in f.readlines():
-            feedUrlList.append(url)
-            feedName,totalArticles,unreadArticles = self.database.getFeedInfo(url)
-            feedTotalList.append(totalArticles)
-            feedUnreadList.append(unreadArticles)
-            unreadArticles = str(unreadArticles)
-            totalArticles = str(totalArticles)
-            feedNameList.append("({0}/{1})\t{2}".format(unreadArticles.zfill(2),totalArticles.zfill(2),feedName))
+            url = url.strip()
+            if url[0] == "=": #is a category
+                feedUrlList.append("")
+                feedTotalList.append(-1)
+                feedUnreadList.append(-1)
+                feedNameList.append(url)
+            else: #is a feed url
+                feedUrlList.append(url)
+                feedName,totalArticles,unreadArticles = self.database.getFeedInfo(url)
+                feedTotalList.append(totalArticles)
+                feedUnreadList.append(unreadArticles)
+                unreadArticles = str(unreadArticles)
+                totalArticles = str(totalArticles)
+                feedNameList.append("({0}/{1})\t{2}".format(unreadArticles.zfill(2),totalArticles.zfill(2),feedName))
         f.close()
-        return feedUrlList, feedNameList, feedTotalList, feedUnreadList;
+        return feedUrlList, feedNameList, feedTotalList, feedUnreadList
 
     def getConfigs(self):
         configFilePath = os.path.join(self.getConfigPath(),'config')
         if (os.path.exists(configFilePath) == False):
             f = open(configFilePath,'w')
-            f.write("""# simpleRSS config file 
+            f.write("""# simpleRSS config file
 browser = xdg-open
 
 # Screen Colors
@@ -227,7 +233,7 @@ color_listitem_unread_selected = 1,7""")
                 configs[config[0]] = config[1]
         f.close()
         return configs
-        
+
     def getConfigPath(self):
         homefolder = os.path.expanduser('~')
         configfolder = os.path.join(homefolder, '.simplerss')
@@ -273,5 +279,7 @@ color_listitem_unread_selected = 1,7""")
                          </ul>"""
         showArticleKey, showArticlePadY = self.screen.showArticle(self.rssworker.htmlToText(helpContent),returnKeys=[ord('q')])
         return
-#
-prog = mainprogram()
+
+
+if __name__ == '__main__':
+    prog = mainprogram()

@@ -61,19 +61,30 @@ class screen(object):
         self.stdscr.refresh()
         return
 
-    def showList(self, items = [], padY = 0, selectedItem = 0, readItems = [], keysMoveUp = [curses.KEY_UP, ord('k')], keysMoveDown = [curses.KEY_DOWN, ord('j')], returnKeys = []):
+    def showList(self, items = [], categories = False, padY = 0, selectedItem = -1, readItems = [], keysMoveUp = [curses.KEY_UP, ord('k')], keysMoveDown = [curses.KEY_DOWN, ord('j')], returnKeys = []):
         nrItems = len(items);
         if nrItems == 0:
             return -1, -1, -1
         #feed list
+        categoryIndexes = []
         pad = curses.newpad(nrItems + 1,curses.COLS)
         pad.keypad(1)
         for i in range(0,nrItems):
             fill = " "*(curses.COLS - len(items[i]))
-            pad.addstr(i, 0, " {0}{1}".format(items[i], fill),curses.color_pair(PAIR_NORMAL_UNSELECTED))
-            if (len(readItems) == nrItems) and (nrItems > 0):
-                if readItems[i] == 0:
-                    pad.chgat(i,0,-1,curses.A_BOLD | curses.color_pair(PAIR_UNREAD_UNSELECTED))
+            if categories == True and items[i][0] == "=": #and items[-1:] == "=": #is a list with categories and its a category
+                pad.addstr(i, 0, "{0}: {1}".format(items[i][1:-1], fill),curses.A_BOLD)
+                categoryIndexes.append(i)
+            else:
+                pad.addstr(i, 0, " {0}{1}".format(items[i], fill),curses.color_pair(PAIR_NORMAL_UNSELECTED))
+                if (len(readItems) == nrItems) and (nrItems > 0): #if we have readItems parameter
+                    if readItems[i] == 0:
+                        pad.chgat(i,0,-1,curses.A_BOLD | curses.color_pair(PAIR_UNREAD_UNSELECTED))
+
+        #select the first feed
+        while (selectedItem in categoryIndexes):
+            selectedItem += 1
+        if selectedItem > nrItems:
+            selectedItem = 0
 
         #fill blank lines to overwrite old content
         if curses.has_colors():
@@ -107,16 +118,20 @@ class screen(object):
         self.stdscr.refresh()
         pad.refresh(padY,0,1,0,curses.LINES-3,curses.COLS)
         while (1):
+            #self.setStatus(str(selectedItem))
             c = pad.getch()
-            
             if c in keysMoveDown: #moveDown
+                lastSelected = selectedItem
+                while (selectedItem+1 in categoryIndexes):
+                    selectedItem += 1
+
                 if (selectedItem < nrItems-1):
                     lastAttr = curses.A_NORMAL
                     lastColor = curses.color_pair(PAIR_NORMAL_UNSELECTED);
                     currentAttr = curses.A_NORMAL
                     currentColor = curses.color_pair(PAIR_NORMAL_SELECTED);
                     if (len(readItems) == nrItems) and (nrItems > 0):
-                        if readItems[selectedItem] == 0:
+                        if readItems[lastSelected] == 0:
                             lastAttr = curses.A_BOLD
                             lastColor = curses.color_pair(PAIR_UNREAD_UNSELECTED) 
                         if readItems[selectedItem + 1] == 0:
@@ -124,23 +139,29 @@ class screen(object):
                             currentColor = curses.color_pair(PAIR_UNREAD_SELECTED)
                     if (curses.has_colors()):
                         pad.chgat(selectedItem+1,0,-1, currentAttr | currentColor);
-                        pad.chgat(selectedItem,0,-1, lastAttr | lastColor)
+                        pad.chgat(lastSelected,0,-1, lastAttr | lastColor)
                     else:
-                        pad.chgat(selectedItem,0,-1,lastAttr)
                         pad.chgat(selectedItem+1,0,-1,curses.A_REVERSE | currentAttr);
+                        pad.chgat(lastSelected,0,-1,lastAttr)
                     selectedItem+=1
                     #scroll down when we reach the end of the page
                     if (selectedItem >= curses.LINES - 3):
                         padY = selectedItem - (curses.LINES - 3) + 1
+                else:
+                    selectedItem = lastSelected
 
             elif c in keysMoveUp:#moveUp
+                lastSelected = selectedItem
+                while (selectedItem-1 in categoryIndexes):
+                    selectedItem -= 1
+
                 if (selectedItem > 0):
                     lastAttr = curses.A_NORMAL
                     lastColor = curses.color_pair(PAIR_NORMAL_UNSELECTED);
                     currentAttr = curses.A_NORMAL
                     currentColor = curses.color_pair(PAIR_NORMAL_SELECTED);
                     if readItems != 0:
-                        if readItems[selectedItem] == 0:
+                        if readItems[lastSelected] == 0:
                             lastAttr = curses.A_BOLD
                             lastColor = curses.color_pair(PAIR_UNREAD_UNSELECTED) 
                         if readItems[selectedItem - 1] == 0:
@@ -148,14 +169,16 @@ class screen(object):
                             currentColor = curses.color_pair(PAIR_UNREAD_SELECTED)
                     if (curses.has_colors()):
                         pad.chgat(selectedItem-1,0,-1, currentAttr | currentColor);
-                        pad.chgat(selectedItem,0,-1, lastAttr | lastColor)
+                        pad.chgat(lastSelected,0,-1, lastAttr | lastColor)
                     else:
-                        pad.chgat(selectedItem,0,-1,lastAttr)
                         pad.chgat(selectedItem-1,0,-1,curses.A_REVERSE | currentAttr);
+                        pad.chgat(lastSelected,0,-1,lastAttr)
                     selectedItem-=1;
                     #scroll up when we want a item that isnt showing
                     if (selectedItem < padY):
                         padY -= 1
+                else:
+                    selectedItem = lastSelected
 
             elif c in returnKeys: #return
                 return c, padY, selectedItem
