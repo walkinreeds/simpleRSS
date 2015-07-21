@@ -209,18 +209,18 @@ class mainprogram(object):
         feedUrlList = []
         feedTotalList = []
         feedUnreadList = []
-        lastCategory = ""
+        currentCategory = ""
         for url in f.readlines():
             url = url.strip()
             if url[0] == "=": #is a category
-                if category == "all" or url[1:-1] == category:
+                currentCategory = url[1:-1]
+                if category == "all" or currentCategory == category:
                     feedUrlList.append("")
                     feedTotalList.append(-1)
                     feedUnreadList.append(-1)
                     feedNameList.append(url)
-                    lastCategory = url[1:-1]
             else: #is a feed url
-                if category == "all" or lastCategory == category:
+                if category == "all" or currentCategory == category:
                     feedUrlList.append(url)
                     feedName,totalArticles,unreadArticles,error = self.database.getFeedInfo(url)
                     feedTotalList.append(totalArticles)
