@@ -78,6 +78,7 @@ class mainprogram(object):
             elif feedListKey == 10 or feedListKey == ord('l'):
                 #open article list
                 self.showArticleList(namelist[selectedFeed].split("\t")[1], urllist[selectedFeed])
+        return
                        
     def showArticleList(self, feedName, feedUrl):
         selectedArticle = 0
@@ -179,7 +180,7 @@ class mainprogram(object):
             return 
 
         self.screen.setStatus("Updated: "+feedurl)
-        return 0
+        return
 
     def openInBrowser(self,url):
         #check browser configs
