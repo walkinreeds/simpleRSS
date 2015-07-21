@@ -1,5 +1,6 @@
 # simpleRSS
 ## Curses RSS Reader
+**This is the development version, it's highly unstable. If you plan to use it please backup the config files and database from previous versions (usually ~/.simplerss)**
 
 I know there are a lot of RSS readers out there, I recently decided to learn how to program with curses and also learn how to use git.
 My goal is to make something like newsbeuter but with image support and maybe categories.
