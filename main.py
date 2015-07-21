@@ -22,22 +22,24 @@ class mainprogram(object):
 
         self.screen.setWindowTitle(self.title);
 
-        moveUpKeys = [KEY_UP,ord('k')]
-        moveDownKeys = [KEY_DOWN,ord('j')]
-        feedListReturnKeys = [ord('q'), ord('h'), ord('r'), ord('R'), ord('a'), ord('A'), ord('u'), ord('U'), 10, ord('l'), ord('?')]
-        articleListReturnKeys = feedListReturnKeys + [ord('o')]
+        self.moveUpKeys = [KEY_UP,ord('k')]
+        self.moveDownKeys = [KEY_DOWN,ord('j')]
 
         try:
-            self.mainloop(moveUpKeys, moveDownKeys, feedListReturnKeys, articleListReturnKeys)
+            self.showFeedList()
         except Exception as e:
             self.screen.close()
             print("simpleRSS crashed:")
             traceback.print_exc()
         return
 
-    def mainloop(self, moveUpKeys, moveDownKeys, feedListReturnKeys, articleListReturnKeys):
+    def showCategoryList(self, selectedItem, padY):
+        pass
+    
+    def showFeedList(self, category = "all"):
         feedPadY = 0
         selectedFeed = 0;
+        feedListReturnKeys = [ord('q'), ord('h'), ord('r'), ord('R'), ord('a'), ord('A'), ord('u'), ord('U'), 10, ord('l'), ord('?')]
         #loop
         while(1):
             urllist, namelist,totallist,unreadlist = self.getFeedList() #get urls
@@ -52,7 +54,7 @@ class mainprogram(object):
                 if number > 0: viewList.append(0)
                 else: viewList.append(1)
 
-            feedListKey,feedPadY,selectedFeed = self.screen.showList(namelist, True, feedPadY, selectedFeed, viewList, moveUpKeys, moveDownKeys, feedListReturnKeys)
+            feedListKey,feedPadY,selectedFeed = self.screen.showList(namelist, True, feedPadY, selectedFeed, viewList, self.moveUpKeys, self.moveDownKeys, feedListReturnKeys)
 
             if feedListKey == ord('q') or feedListKey == ord('h'): #exit app
                 self.screen.close()
@@ -75,57 +77,56 @@ class mainprogram(object):
                 self.showHelp()
             elif feedListKey == 10 or feedListKey == ord('l'):
                 #open article list
-                selectedArticle = 0
-                articlePadY = 0
-                while(1):
-                    articleList,articleContent,articleViewed,articleUrl = self.getArticleList(urllist[selectedFeed])
+                self.showArticleList(namelist[selectedFeed].split("\t")[1], urllist[selectedFeed])
+                       
+    def showArticleList(self, feedName, feedUrl):
+        selectedArticle = 0
+        articlePadY = 0
+        articleListReturnKeys = [ord('q'), ord('h'), ord('r'), ord('R'), ord('a'), ord('A'), ord('u'), ord('U'), 10, ord('l'), ord('?'), ord('o')]
+        while(1):
+            articleList,articleContent,articleViewed,articleUrl = self.getArticleList(feedUrl)
 
-                    #get out if there's no articles
-                    if (len(articleList) == 0):
-                        break;
+            #get out if there's no articles
+            if (len(articleList) == 0):
+                break;
 
-                    self.screen.showInterface(" {0} - {1}".format(self.title, namelist[selectedFeed].split("\t")[1]), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
-                    articleListKey, articlePadY, selectedArticle = self.screen.showList(articleList, False, articlePadY, selectedArticle, articleViewed, moveUpKeys, moveDownKeys, articleListReturnKeys)
-                    if articleListKey == ord('q') or articleListKey == ord('h'):
-                        break;
-                    elif articleListKey == ord('r'): #pressed r / update this feed
-                        self.updateFeed(urllist[selectedArticle])
-                    elif articleListKey == ord('a'): #mark article read
-                        self.database.setArticleViewed(articleUrl[selectedArticle])
-                    elif articleListKey == ord('A'): #mark feed read
-                        self.database.setFeedViewed(urllist[selectedFeed],1)
-                    elif articleListKey == ord('u'): #mark article NOT read
-                        self.database.setArticleViewed(articleUrl[selectedArticle],0)
-                    elif articleListKey == ord('U'): #mark feed NOT read
-                        self.database.setFeedViewed(urllist[selectedFeed],0)
-                    elif articleListKey == ord('o'): #open in browser
-                        self.openInBrowser(articleUrl[selectedArticle])
-                    elif articleListKey == ord('?'): #help
-                        self.showHelp()
-                    elif articleListKey == 10 or articleListKey == ord('l'):
-                        #open article
-                        showArticlePadY = 0
-                        self.screen.showInterface(" {0} - {1}".format(self.title, namelist[selectedFeed].split("\t")[1]), " q:Back,o: Open in Browser");
-                        self.database.setArticleViewed(articleUrl[selectedArticle])
-                        while(1):
-                            showArticleKey, showArticlePadY = self.screen.showArticle(self.rssworker.htmlToText(articleContent[selectedArticle]), showArticlePadY, moveUpKeys, moveDownKeys,[ord('q'), ord('h'), ord('l'), ord('o'), ord('u'), ord('?')])
-                            if showArticleKey == ord('q') or showArticleKey == ord('h'):
-                                break;
-                            elif showArticleKey == ord('o') or showArticleKey == ord('l'):
-                                self.openInBrowser(articleUrl[selectedArticle])
-                            elif showArticleKey == ord('u'): #mark article NOT read
-                                self.database.setArticleViewed(articleUrl[selectedArticle],0)
-                            elif showArticleKey == ord('?'): #help
-                                self.showHelp()
+            self.screen.showInterface(" {0} - {1}".format(self.title, feedName), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
+            articleListKey, articlePadY, selectedArticle = self.screen.showList(articleList, False, articlePadY, selectedArticle, articleViewed, self.moveUpKeys, self.moveDownKeys, articleListReturnKeys)
+            if articleListKey == ord('q') or articleListKey == ord('h'):
+                break;
+            elif articleListKey == ord('r'): #pressed r / update this feed
+                self.updateFeed(feedUrl)
+            elif articleListKey == ord('a'): #mark article read
+                self.database.setArticleViewed(articleUrl[selectedArticle])
+            elif articleListKey == ord('A'): #mark feed read
+                self.database.setFeedViewed(feedUrl,1)
+            elif articleListKey == ord('u'): #mark article NOT read
+                self.database.setArticleViewed(articleUrl[selectedArticle],0)
+            elif articleListKey == ord('U'): #mark feed NOT read
+                self.database.setFeedViewed(feedUrl,0)
+            elif articleListKey == ord('o'): #open in browser
+                self.openInBrowser(articleUrl[selectedArticle])
+            elif articleListKey == ord('?'): #help
+                self.showHelp()
+            elif articleListKey == 10 or articleListKey == ord('l'):
+                self.showArticle(feedName, articleUrl[selectedArticle], articleContent[selectedArticle])
+        return
 
-    def showArticleList(self, feed):
-        pass
-
-    def showFeedList(self, category, selectedItem, padY):
-        pass
-
-    def showCategoryList(self, selectedItem, padY):
-        pass
+    def showArticle(self, feedName, articleUrl, articleContent):
+        showArticlePadY = 0
+        self.screen.showInterface(" {0} - {1}".format(self.title,feedName), " q:Back,o: Open in Browser");
+        self.database.setArticleViewed(articleUrl)
+        while(1):
+            showArticleKey, showArticlePadY = self.screen.showArticle(self.rssworker.htmlToText(articleContent), showArticlePadY, self.moveUpKeys, self.moveDownKeys,[ord('q'), ord('h'), ord('l'), ord('o'), ord('u'), ord('?')])
+            if showArticleKey == ord('q') or showArticleKey == ord('h'):
+                break;
+            elif showArticleKey == ord('o') or showArticleKey == ord('l'):
+                self.openInBrowser(articleUrl)
+            elif showArticleKey == ord('u'): #mark article NOT read
+                self.database.setArticleViewed(articleUrl,0)
+            elif showArticleKey == ord('?'): #help
+                self.showHelp()
+        return
 
     def getArticleList(self, feedurl):
         feed = self.database.getArticles(feedurl)
