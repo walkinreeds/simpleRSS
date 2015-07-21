@@ -160,13 +160,14 @@ class screen(object):
                     lastColor = curses.color_pair(PAIR_NORMAL_UNSELECTED);
                     currentAttr = curses.A_NORMAL
                     currentColor = curses.color_pair(PAIR_NORMAL_SELECTED);
-                    if readItems != 0:
-                        if readItems[lastSelected] == 0:
-                            lastAttr = curses.A_BOLD
-                            lastColor = curses.color_pair(PAIR_UNREAD_UNSELECTED) 
-                        if readItems[selectedItem - 1] == 0:
-                            currentAttr = curses.A_BOLD
-                            currentColor = curses.color_pair(PAIR_UNREAD_SELECTED)
+                    if (len(readItems) == nrItems) and (nrItems > 0):
+                        if readItems != 0:
+                            if readItems[lastSelected] == 0:
+                                lastAttr = curses.A_BOLD
+                                lastColor = curses.color_pair(PAIR_UNREAD_UNSELECTED) 
+                            if readItems[selectedItem - 1] == 0:
+                                currentAttr = curses.A_BOLD
+                                currentColor = curses.color_pair(PAIR_UNREAD_SELECTED)
                     if (curses.has_colors()):
                         pad.chgat(selectedItem-1,0,-1, currentAttr | currentColor);
                         pad.chgat(lastSelected,0,-1, lastAttr | lastColor)
