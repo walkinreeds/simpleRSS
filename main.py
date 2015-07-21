@@ -26,15 +26,45 @@ class mainprogram(object):
         self.moveDownKeys = [KEY_DOWN,ord('j')]
 
         try:
-            self.showFeedList()
+            self.showFirstPage()
         except Exception as e:
             self.screen.close()
             print("simpleRSS crashed:")
             traceback.print_exc()
+
+        self.screen.close()
         return
 
-    def showCategoryList(self, selectedItem, padY):
-        pass
+    def showFirstPage(self):
+        if 'firstpage' in self.config.keys():
+            if self.config['firstpage'] == 'categories':
+                self.showCategoryList()
+            else:
+                self.showFeedList()
+        else:
+            self.showFeedList()
+
+    def showCategoryList(self):
+        padY = 0;
+        selectedIndex = 0;
+
+        categoryListReturnKeys = [ord('q'), ord('h'), ord('l'), ord('?'), 10] 
+
+        categories = self.getCategoriesList()
+        while(1):
+            if (len(categories) == 0):
+                self.showFeedList()
+
+            self.screen.showInterface(self.title, "q:Quit,ENTER:Open,?:Help")
+
+            categoryListKey, padY, selectedIndex = self.screen.showList(categories, True, padY, selectedIndex, [], self.moveUpKeys, self.moveDownKeys, categoryListReturnKeys)
+
+            if categoryListKey == ord('q') or categoryListKey == ord('h'):
+                return
+            elif categoryListKey == ord('?'):
+                self.showHelp()
+            elif categoryListKey == ord('l') or categoryListKey == 10:
+                self.showFeedList(categories[selectedIndex])
     
     def showFeedList(self, category = "all"):
         feedPadY = 0
@@ -42,13 +72,13 @@ class mainprogram(object):
         feedListReturnKeys = [ord('q'), ord('h'), ord('r'), ord('R'), ord('a'), ord('A'), ord('u'), ord('U'), 10, ord('l'), ord('?')]
         #loop
         while(1):
-            urllist, namelist,totallist,unreadlist = self.getFeedList() #get urls
+            urllist, namelist,totallist,unreadlist = self.getFeedList(category) #get urls
             if (len(urllist) == 0):
                 self.screen.close()
                 print("You need to add feeds to your {0} file.".format(os.path.join(self.getConfigPath(), 'urls')))
                 return
 
-            self.screen.showInterface(" {0}".format(self.title), " q:Quit,ENTER:Open,r:Reload,R:Reload All,a:Mark Feed Read,A:Mark All Read");
+            self.screen.showInterface(self.title, " q:Quit,ENTER:Open,r:Reload,R:Reload All,a:Mark Feed Read,A:Mark All Read");
             viewList = []
             for number in unreadlist:
                 if number > 0: viewList.append(0)
@@ -57,8 +87,7 @@ class mainprogram(object):
             feedListKey,feedPadY,selectedFeed = self.screen.showList(namelist, True, feedPadY, selectedFeed, viewList, self.moveUpKeys, self.moveDownKeys, feedListReturnKeys)
 
             if feedListKey == ord('q') or feedListKey == ord('h'): #exit app
-                self.screen.close()
-                break;
+                return
             elif feedListKey == ord('r'): #pressed r / update selected feed
                 self.updateFeed(urllist[selectedFeed])
             elif feedListKey == ord('R'): #pressed R / update all feeds
@@ -129,6 +158,60 @@ class mainprogram(object):
                 self.showHelp()
         return
 
+    def getCategoriesList(self):
+        urlFile = os.path.join(self.getConfigPath(), 'urls');
+        if (os.path.exists(urlFile) == False): #create the file if it doesnt exist
+            f = open(urlFile,'w')
+            f.write("http://strangequark.tk/index.php/feed")
+            f.close()
+
+        f = open(urlFile, 'r')
+        categories = ['=Categories=']
+        for url in f.readlines():
+            url = url.strip()
+            if url[0] == "=":
+                categories.append(url[1:-1])
+
+        return categories
+
+    def getFeedList(self, category = "all"):
+        urlFile = os.path.join(self.getConfigPath(), 'urls');
+        if (os.path.exists(urlFile) == False): #create the file if it doesnt exist
+            f = open(urlFile,'w')
+            f.write("http://strangequark.tk/index.php/feed")
+            f.close()
+
+        f = open(urlFile, 'r')
+        feedNameList = []
+        feedUrlList = []
+        feedTotalList = []
+        feedUnreadList = []
+        lastCategory = ""
+        for url in f.readlines():
+            url = url.strip()
+            if url[0] == "=": #is a category
+                if category == "all" or url[1:-1] == category:
+                    feedUrlList.append("")
+                    feedTotalList.append(-1)
+                    feedUnreadList.append(-1)
+                    feedNameList.append(url)
+                    lastCategory = url[1:-1]
+            else: #is a feed url
+                if category == "all" or lastCategory == category:
+                    feedUrlList.append(url)
+                    feedName,totalArticles,unreadArticles,error = self.database.getFeedInfo(url)
+                    feedTotalList.append(totalArticles)
+                    feedUnreadList.append(unreadArticles)
+                    unreadArticles = str(unreadArticles)
+                    totalArticles = str(totalArticles)
+                    if error == 1: 
+                        indicator = "E";
+                    else:
+                        indicator = " "; 
+                    feedNameList.append("{3} ({0}/{1})\t{2}".format(unreadArticles.zfill(2),totalArticles.zfill(2),feedName,indicator))
+        f.close()
+        return feedUrlList, feedNameList, feedTotalList, feedUnreadList
+
     def getArticleList(self, feedurl):
         feed = self.database.getArticles(feedurl)
         articleList = [];
@@ -190,40 +273,6 @@ class mainprogram(object):
             browser = 'xdg-open'
         os.system(browser+' '+url+ " > /dev/null 2>&1")
         return
-
-    def getFeedList(self):
-        urlFile = os.path.join(self.getConfigPath(), 'urls');
-        if (os.path.exists(urlFile) == False): #create the file if it doesnt exist
-            f = open(urlFile,'w')
-            f.write("http://strangequark.tk/index.php/feed")
-            f.close()
-
-        f = open(urlFile, 'r')
-        feedNameList = []
-        feedUrlList = []
-        feedTotalList = []
-        feedUnreadList = []
-        for url in f.readlines():
-            url = url.strip()
-            if url[0] == "=": #is a category
-                feedUrlList.append("")
-                feedTotalList.append(-1)
-                feedUnreadList.append(-1)
-                feedNameList.append(url)
-            else: #is a feed url
-                feedUrlList.append(url)
-                feedName,totalArticles,unreadArticles,error = self.database.getFeedInfo(url)
-                feedTotalList.append(totalArticles)
-                feedUnreadList.append(unreadArticles)
-                unreadArticles = str(unreadArticles)
-                totalArticles = str(totalArticles)
-                if error == 1: 
-                    indicator = "E";
-                else:
-                    indicator = " "; 
-                feedNameList.append("{3} ({0}/{1})\t{2}".format(unreadArticles.zfill(2),totalArticles.zfill(2),feedName,indicator))
-        f.close()
-        return feedUrlList, feedNameList, feedTotalList, feedUnreadList
 
     def getConfigs(self):
         configFilePath = os.path.join(self.getConfigPath(),'config')
