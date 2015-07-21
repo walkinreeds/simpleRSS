@@ -50,21 +50,35 @@ class mainprogram(object):
 
         categoryListReturnKeys = [ord('q'), ord('h'), ord('l'), ord('?'), 10] 
 
-        categories = self.getCategoriesList()
+        categories,articleCount,unreadCount = self.getCategoriesList()
+        namelist = [categories[0]]
+        readItems = [0]
+        for i in range(1,len(categories)):
+            count = "({0}/{1})".format(unreadCount[i],articleCount[i])
+            namelist.append("{0}\t{1}".format(count.ljust(8),categories[i]))
+            if unreadCount[i] == 0:
+                readItems.append(1)
+            else:
+                readItems.append(0)
+
         while(1):
             if (len(categories) == 0):
                 self.showFeedList()
 
             self.screen.showInterface(self.title, "q:Quit,ENTER:Open,?:Help")
 
-            categoryListKey, padY, selectedIndex = self.screen.showList(categories, True, padY, selectedIndex, [], self.moveUpKeys, self.moveDownKeys, categoryListReturnKeys)
+            categoryListKey, padY, selectedIndex = self.screen.showList(namelist, True, padY, selectedIndex, readItems, self.moveUpKeys, self.moveDownKeys, categoryListReturnKeys)
 
             if categoryListKey == ord('q') or categoryListKey == ord('h'):
                 return
             elif categoryListKey == ord('?'):
                 self.showHelp()
             elif categoryListKey == ord('l') or categoryListKey == 10:
-                self.showFeedList(categories[selectedIndex])
+                if selectedIndex == 1: #all
+                    self.screen.setStatus("Showing all feeds")
+                    self.showFeedList("all")
+                else:
+                    self.showFeedList(categories[selectedIndex])
     
     def showFeedList(self, category = "all"):
         feedPadY = 0
@@ -166,13 +180,22 @@ class mainprogram(object):
             f.close()
 
         f = open(urlFile, 'r')
-        categories = ['=Categories=']
+        categories = ['=Categories=','All']
+        unreadCount = [-1,0]
+        articleCount = [-1,0]
         for url in f.readlines():
             url = url.strip()
             if url[0] == "=":
                 categories.append(url[1:-1])
-
-        return categories
+                unreadCount.append(0)
+                articleCount.append(0)
+            else:
+                feedInfo = self.database.getFeedInfo(url)
+                unreadCount[-1] += feedInfo[2]
+                articleCount[-1] += feedInfo[1]
+                unreadCount[1] += unreadCount[-1]
+                articleCount[1] += articleCount[-1]
+        return categories,articleCount,unreadCount
 
     def getFeedList(self, category = "all"):
         urlFile = os.path.join(self.getConfigPath(), 'urls');
