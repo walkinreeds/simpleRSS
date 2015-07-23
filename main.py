@@ -36,10 +36,18 @@ class mainprogram(object):
         return
 
     def showFirstPage(self):
-        if 'firstpage' in self.config.keys():
-            if self.config['firstpage'] == 'categories':
+        """
+        pagemode config:
+            categories_feeds    = Pages: categories, feeds, articles, articleContent
+            categories_articles = Pages: categories, articles, articleContent
+            feeds_articles      = Pages: feeds, articles, articleContent
+        """
+        if 'pagemode' in self.config.keys():
+            if self.config['pagemode'] == 'categories_feeds':
                 self.showCategoryList()
-            else:
+            elif self.config['pagemode'] == 'categories_articles':
+                pass
+            elif self.config['pagemode'] == 'feeds_articles':
                 self.showFeedList()
         else:
             self.showFeedList()
@@ -48,7 +56,7 @@ class mainprogram(object):
         padY = 0;
         selectedIndex = 0;
 
-        categoryListReturnKeys = [ord('q'), ord('h'), ord('l'), ord('?'), 10] 
+        categoryListReturnKeys = [ord('q'), ord('h'), ord('l'), ord('?'), 10]
 
         categories,articleCount,unreadCount = self.getCategoriesList()
         namelist = [categories[0]]
@@ -79,7 +87,7 @@ class mainprogram(object):
                     self.showFeedList("all")
                 else:
                     self.showFeedList(categories[selectedIndex])
-    
+
     def showFeedList(self, category = "all"):
         feedPadY = 0
         selectedFeed = 0;
@@ -122,7 +130,7 @@ class mainprogram(object):
                 #open article list
                 self.showArticleList(namelist[selectedFeed].split("\t")[1], urllist[selectedFeed])
         return
-                       
+
     def showArticleList(self, feedName, feedUrl):
         selectedArticle = 0
         articlePadY = 0
@@ -227,10 +235,10 @@ class mainprogram(object):
                     feedUnreadList.append(unreadArticles)
                     unreadArticles = str(unreadArticles)
                     totalArticles = str(totalArticles)
-                    if error == 1: 
+                    if error == 1:
                         indicator = "E";
                     else:
-                        indicator = " "; 
+                        indicator = " ";
                     feedNameList.append("{3} ({0}/{1})\t{2}".format(unreadArticles.zfill(2),totalArticles.zfill(2),feedName,indicator))
         f.close()
         return feedUrlList, feedNameList, feedTotalList, feedUnreadList
@@ -283,7 +291,7 @@ class mainprogram(object):
                 self.database.addArticle(feedurl,article[0],article[1],article[2],pubDate)
         except Exception as e:
             self.screen.setStatus("Exception: {0}".format(e))
-            return 
+            return
 
         self.screen.setStatus("Updated: "+feedurl)
         return
