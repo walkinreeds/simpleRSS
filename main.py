@@ -56,29 +56,40 @@ class mainprogram(object):
         padY = 0;
         selectedIndex = 0;
 
-        categoryListReturnKeys = [ord('q'), ord('h'), ord('l'), ord('?'), 10]
+        categoryListReturnKeys = [ord('q'), ord('r'), ord('R'), ord('h'), ord('l'), ord('?'), 10]
 
-        categories,articleCount,unreadCount = self.getCategoriesList()
-        namelist = [categories[0]]
-        readItems = [0]
-        for i in range(1,len(categories)):
-            count = "({0}/{1})".format(unreadCount[i],articleCount[i])
-            namelist.append("{0}\t{1}".format(count.ljust(8),categories[i]))
-            if unreadCount[i] == 0:
-                readItems.append(1)
-            else:
-                readItems.append(0)
-
+        
         while(1):
+            categories,articleCount,unreadCount = self.getCategoriesList()
+            namelist = [categories[0]]
+            readItems = [0]
+            for i in range(1,len(categories)):
+                count = "({0}/{1})".format(unreadCount[i],articleCount[i])
+                namelist.append("{0}\t{1}".format(count.ljust(8),categories[i]))
+                if unreadCount[i] == 0:
+                    readItems.append(1)
+                else:
+                    readItems.append(0)
+
             if (len(categories) == 0):
                 self.showFeedList()
 
-            self.screen.showInterface(self.title, "q:Quit,ENTER:Open,?:Help")
+            self.screen.showInterface(self.title, "q:Quit,ENTER:Open,r:Reload Category,R:Reload All,?:Help")
 
             categoryListKey, padY, selectedIndex = self.screen.showList(namelist, True, padY, selectedIndex, readItems, self.moveUpKeys, self.moveDownKeys, categoryListReturnKeys)
 
             if categoryListKey == ord('q') or categoryListKey == ord('h'):
                 return
+            elif categoryListKey == ord('r'):
+                urllist = self.getFeedList(categories[selectedIndex])[0]
+                for feed in urllist:
+                    self.updateFeed(feed)
+                self.screen.setStatus("Done updating")
+            elif categoryListKey == ord('R'):
+                urllist = self.getFeedList()[0]
+                for feed in urllist:
+                    self.updateFeed(feed)
+                self.screen.setStatus("Done updating")
             elif categoryListKey == ord('?'):
                 self.showHelp()
             elif categoryListKey == ord('l') or categoryListKey == 10:
