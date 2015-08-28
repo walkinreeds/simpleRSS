@@ -100,7 +100,7 @@ class database(object):
                 return
             elif len(feeds) == 0 and error == 0:
                 #valid new feed
-                c.execute("INSERT INTO feeds VALUES(?,?)",(md5url,name,))
+                c.execute("INSERT INTO feeds VALUES(?,?,?)",(md5url,name,error))
             elif len(feeds) > 0 and error == 0:
                 #existant feed no errors
                 c.execute("UPDATE feeds SET name = ?, error = ? WHERE urlhash = ?", (name, error, md5url))
