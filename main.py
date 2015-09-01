@@ -1,10 +1,12 @@
 from screen import screen
 from rssget import rss
 from database import database
+import sys
 import os
 import traceback
+#import time
+from logwriter import logWriter
 
-import time
 VERSION = 0.2
 
 KEY_UP = 259
@@ -12,9 +14,14 @@ KEY_DOWN = 258
 KEY_RIGHT = 261
 KEY_LEFT = 260
 class mainprogram(object):
-    def __init__(self):
+    def __init__(self,debug = False):
         self.title = "SimpleRSS {0} Development Version".format(VERSION)
         #instantiate classes
+        if (debug == True):
+            self.logwriter = logWriter()
+        else:
+            self.logwriter = logWriter("/dev/null")
+
         self.config = self.getConfigs()
         self.database = database(os.path.join(self.getConfigPath(),'database.db3'), VERSION)
         self.screen = screen(self.config)
@@ -44,21 +51,21 @@ class mainprogram(object):
         """
         if 'pagemode' in self.config.keys():
             if self.config['pagemode'] == 'categories_feeds':
-                self.showCategoryList()
+                self.showCategoryList(self.config['pagemode'])
             elif self.config['pagemode'] == 'categories_articles':
-                pass
+                self.showCategoryList(self.config['pagemode'])
             elif self.config['pagemode'] == 'feeds_articles':
                 self.showFeedList()
         else:
             self.showFeedList()
 
-    def showCategoryList(self):
+    def showCategoryList(self, mode = 'categories_feeds'):
+        self.logwriter.write("In showCategoryList")
         padY = 0;
         selectedIndex = 0;
 
         categoryListReturnKeys = [ord('q'), ord('r'), ord('R'), ord('h'), ord('l'), ord('?'), 10]
 
-        
         while(1):
             categories,articleCount,unreadCount = self.getCategoriesList()
             namelist = [categories[0]]
@@ -93,13 +100,23 @@ class mainprogram(object):
             elif categoryListKey == ord('?'):
                 self.showHelp()
             elif categoryListKey == ord('l') or categoryListKey == 10:
-                if selectedIndex == 1: #all
-                    self.screen.setStatus("Showing all feeds")
-                    self.showFeedList("all")
-                else:
-                    self.showFeedList(categories[selectedIndex])
+                if mode == 'categories_feeds':
+                    if selectedIndex == 1: #all
+                        self.screen.setStatus("Showing all feeds")
+                        self.showFeedList("all")
+                    else:
+                        self.showFeedList(categories[selectedIndex])
+                elif mode == 'categories_articles':
+                    if selectedIndex == 1: #all
+                       feeds = self.getFeedList("all")[0]
+                       self.showArticleList("All Articles",feeds)
+                    else:
+                        feeds = self.getFeedList(categories[selectedIndex])[0]
+                        self.showArticleList(namelist[selectedIndex],feeds)
+
 
     def showFeedList(self, category = "all"):
+        self.logwriter.write("In showFeedList(), category={0}".format(category))
         feedPadY = 0
         selectedFeed = 0;
         feedListReturnKeys = [ord('q'), ord('h'), ord('r'), ord('R'), ord('a'), ord('A'), ord('u'), ord('U'), 10, ord('l'), ord('?')]
@@ -139,21 +156,27 @@ class mainprogram(object):
                 self.showHelp()
             elif feedListKey == 10 or feedListKey == ord('l'):
                 #open article list
-                self.showArticleList(namelist[selectedFeed].split("\t")[1], urllist[selectedFeed])
+                self.showArticleList(namelist[selectedFeed].split("\t")[1], [urllist[selectedFeed]])
         return
 
-    def showArticleList(self, feedName, feedUrl):
+    def showArticleList(self, name, feedUrls):
         selectedArticle = 0
         articlePadY = 0
         articleListReturnKeys = [ord('q'), ord('h'), ord('r'), ord('R'), ord('a'), ord('A'), ord('u'), ord('U'), 10, ord('l'), ord('?'), ord('o')]
         while(1):
-            articleList,articleContent,articleViewed,articleUrl = self.getArticleList(feedUrl)
+            articleList = articleContent = articleViewed = articleUrl = []
+            for feedUrl in feedUrls:
+                articles = self.getArticleList(feedUrl)
+                articleList = articleList + articles[0]
+                articleContent = articleContent + articles[1]
+                articleViewed = articleViewed + articles[2]
+                articleUrl = articleUrl + articles[3]
 
             #get out if there's no articles
             if (len(articleList) == 0):
                 break;
 
-            self.screen.showInterface(" {0} - {1}".format(self.title, feedName), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
+            self.screen.showInterface("{0} - {1}".format(self.title, name), " q:Back,ENTER:Open,o: Open in Browser,r:Reload,a:Mark Article Read,A:Mark All Read");
             articleListKey, articlePadY, selectedArticle = self.screen.showList(articleList, False, articlePadY, selectedArticle, articleViewed, self.moveUpKeys, self.moveDownKeys, articleListReturnKeys)
             if articleListKey == ord('q') or articleListKey == ord('h'):
                 break;
@@ -172,12 +195,12 @@ class mainprogram(object):
             elif articleListKey == ord('?'): #help
                 self.showHelp()
             elif articleListKey == 10 or articleListKey == ord('l'):
-                self.showArticle(feedName, articleUrl[selectedArticle], articleContent[selectedArticle])
+                self.showArticle(name, articleUrl[selectedArticle], articleContent[selectedArticle])
         return
 
     def showArticle(self, feedName, articleUrl, articleContent):
         showArticlePadY = 0
-        self.screen.showInterface(" {0} - {1}".format(self.title,feedName), " q:Back,o: Open in Browser");
+        self.screen.showInterface("{0} - {1}".format(self.title,feedName), " q:Back,o: Open in Browser");
         self.database.setArticleViewed(articleUrl)
         while(1):
             showArticleKey, showArticlePadY = self.screen.showArticle(self.rssworker.htmlToText(articleContent), showArticlePadY, self.moveUpKeys, self.moveDownKeys,[ord('q'), ord('h'), ord('l'), ord('o'), ord('u'), ord('?')])
@@ -393,4 +416,8 @@ color_listitem_unread_selected = 1,7""")
 
 
 if __name__ == '__main__':
-    prog = mainprogram()
+    args = sys.argv
+    if "--debug" in args:
+        prog = mainprogram(True)
+    else:
+        prog = mainprogram()
