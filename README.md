@@ -17,9 +17,15 @@ Dependencies (Python modules):
 
 
 **Tasks for 0.2 release:**
-- [ ] Organize feeds by categories
-  - [ ] Sort articles by Feed/Category
-- [ ] Favorites (display by feed/category)
+- [x] Organize feeds by categories
+  - [x] Organize by Feeds -> Articles (Default)
+  - [x] Organize by Category -> Feed -> Articles
+  - [ ] Organize by Category -> Articles 
+  - [ ] Implement all of above for favorites
+- [ ] Add articles to favorites
+- [ ] Search function to articles/favorites
+  - [ ] Search in category
+  - [ ] Search in feed
 - [ ] Save articles to file
   - [ ] txt (markdown)
   - [ ] html
