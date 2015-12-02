@@ -186,6 +186,7 @@ class screen(object):
 
             elif c == curses.KEY_RESIZE: #terminal resized
                 self.resizeWindow()
+                pad.getch()
                 return '0',padY,selectedItem
  
             pad.refresh(padY,0,1,0,curses.LINES-3,curses.COLS)
@@ -276,6 +277,7 @@ class screen(object):
 
             elif c == curses.KEY_RESIZE: #terminal resized
                 self.resizeWindow()
+                pad.getch()
                 return '0',padY
 
             pad.refresh(padY,0,1,0,curses.LINES-3,curses.COLS)
